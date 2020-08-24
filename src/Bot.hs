@@ -6,6 +6,7 @@ import Discord (DiscordHandler)
 import Discord.Types (Event (..), Message)
 
 import Calls.Echo (cmdEcho)
+import Calls.Help (cmdHelp)
 import Commands (Cmd (..), cmdFromMessage)
 
 
@@ -17,6 +18,9 @@ execCmd :: Message -> Cmd -> DiscordHandler ()
 execCmd msg cmd = case cmd of
     CmdEcho -> do
         res <- runReader cmdEcho msg
+        whenLeft_ res print
+    CmdHelp -> do
+        res <- runReader cmdHelp msg
         whenLeft_ res print
     _ -> do
         -- TODO: Behavior for this (impossible) case?

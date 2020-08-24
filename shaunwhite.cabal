@@ -42,6 +42,7 @@ library
   import:              common
   exposed-modules:     Bot
                      , Calls.Echo
+                     , Calls.Help
                      , Commands
   build-depends:       text == 1.2.*
   hs-source-dirs:      src

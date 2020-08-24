@@ -15,8 +15,8 @@ main = do
     botToken <- readFileText "token"
 
     putTextLn "Ready."
-    res <- runDiscord (discordOpts botToken)
-    putTextLn res
+    userFacingError <- runDiscord (discordOpts botToken)
+    putTextLn userFacingError
 
     putStrLn "Finished."
 
