@@ -24,6 +24,7 @@ data Cmd
     = CmdHelp
     | CmdEcho
     | CmdRoleInvite Text
+    deriving (Show)
 
 cmdFromMessage :: Message -> Maybe Cmd
 cmdFromMessage message = do

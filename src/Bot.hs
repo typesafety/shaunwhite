@@ -3,7 +3,7 @@ module Bot
        ) where
 
 import Discord (DiscordHandler)
-import Discord.Types (Event (..), Message)
+import Discord.Types (Event (MessageCreate), Message)
 
 import Calls.Echo (cmdEcho)
 import Calls.Help (cmdHelp)
@@ -18,11 +18,11 @@ execCmd :: Message -> Cmd -> DiscordHandler ()
 execCmd msg cmd = case cmd of
     CmdEcho -> do
         res <- runReader cmdEcho msg
-        whenLeft_ res print
+        either print print res
     CmdHelp -> do
         res <- runReader cmdHelp msg
-        whenLeft_ res print
+        either print print res
     _ -> do
         -- TODO: Behavior for this (impossible) case?
-        putTextLn "execCmd: unrecognized command"
+        putTextLn $ "execCmd: unrecognized command `" <> show cmd <> "`"
         putTextLn "pls fix."
