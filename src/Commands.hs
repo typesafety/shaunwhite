@@ -2,6 +2,8 @@ module Commands
        ( -- * ADT representing bot commands.
          Cmd (..)
 
+       , Exec
+
          -- * Parser from Message" to "Cmd".
        , cmdFromMessage
 
@@ -15,9 +17,12 @@ import Discord.Types
 import qualified Data.Text as T
 
 
+-- TODO: Better name?
+type Exec = Reader Message
+
 data Cmd
     = CmdHelp
-    | CmdEcho Message
+    | CmdEcho
     | CmdRoleInvite Text
 
 cmdFromMessage :: Message -> Maybe Cmd
@@ -33,7 +38,7 @@ cmdFromMessage message = do
         (command : _) <- words <$> T.stripPrefix botPrefix txt
         case command of
             "help" -> Just CmdHelp
-            "echo" -> Just $ CmdEcho msg
+            "echo" -> Just CmdEcho
             _      -> Nothing
 
     isBotCommand :: Message -> Bool

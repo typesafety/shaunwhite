@@ -9,14 +9,17 @@ import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (ChannelId, Message (..))
 import Discord.Requests (ChannelRequest (CreateMessage))
 
-import Commands (stripCommand)
+import Commands (Exec, stripCommand)
 
 
-cmdEcho :: Message -> DiscordHandler (Either RestCallErrorCode Message)
-cmdEcho msg = restCall $ CreateMessage channel txt
+cmdEcho :: Exec (DiscordHandler (Either RestCallErrorCode Message))
+cmdEcho = asks performCall
   where
-    channel :: ChannelId
-    channel = messageChannel msg
+    performCall :: Message -> DiscordHandler (Either RestCallErrorCode Message)
+    performCall triggerMsg = restCall $ CreateMessage channel txt
+      where
+        channel :: ChannelId
+        channel = messageChannel triggerMsg
 
-    txt :: Text
-    txt = stripCommand $ messageText msg
+        txt :: Text
+        txt = stripCommand $ messageText triggerMsg
