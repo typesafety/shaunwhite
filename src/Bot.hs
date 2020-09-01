@@ -3,26 +3,32 @@ module Bot
        ) where
 
 import Discord (DiscordHandler)
-import Discord.Types (Event (MessageCreate), Message)
+import Discord.Types (Event (MessageCreate))
 
 import Calls.Echo (cmdEcho)
 import Calls.Help (cmdHelp)
-import Commands (Cmd (..), cmdFromMessage)
+import Commands (Env (..), Exec, Cmd (..), cmdFromMessage, isBotCommand)
 
 
 eventHandler :: Event -> DiscordHandler ()
-eventHandler (MessageCreate msg) = whenJust (cmdFromMessage msg) (execCmd msg)
+eventHandler (MessageCreate msg)
+    | isBotCommand msg = runReaderT handleMsg (Env msg)
+  where
+    handleMsg :: Exec DiscordHandler ()
+    handleMsg = do
+        Just cmd <- cmdFromMessage
+        execCmd cmd
 eventHandler _ = pass
 
-execCmd :: Message -> Cmd -> DiscordHandler ()
-execCmd msg cmd = case cmd of
+execCmd :: Cmd -> Exec DiscordHandler ()
+execCmd cmd = case cmd of
     CmdEcho -> do
-        res <- runReader cmdEcho msg
+        res <- cmdEcho
         either print print res
     CmdHelp -> do
-        res <- runReader cmdHelp msg
+        res <- cmdHelp
         either print print res
     _ -> do
         -- TODO: Behavior for this (impossible) case?
-        putTextLn $ "execCmd: unrecognized command `" <> show cmd <> "`"
+        putTextLn $ "execCmd: command not yet implemented: `" <> show cmd <> "`"
         putTextLn "pls fix."

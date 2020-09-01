@@ -2,6 +2,7 @@ module Commands
        ( -- * ADT representing bot commands.
          Cmd (..)
 
+       , Env (..)
        , Exec
 
          -- * Parser from Message" to "Cmd".
@@ -9,16 +10,23 @@ module Commands
 
          -- * Utilities.
        , botPrefix
+       , isBotCommand
        , stripCommand
        ) where
 
+import Discord
 import Discord.Types
 
 import qualified Data.Text as T
 
 
--- TODO: Better name?
-type Exec = Reader Message
+-- For bot commands, holds the message that triggered the command.
+-- Used for getting information about the user, the guild, etc.
+type Exec = ReaderT Env
+
+data Env = Env
+    { envMessage :: Message
+    }
 
 data Cmd
     = CmdHelp
@@ -26,35 +34,28 @@ data Cmd
     | CmdRoleInvite Text
     deriving (Show)
 
-cmdFromMessage :: Message -> Maybe Cmd
-cmdFromMessage message = do
-    -- Message has the correct prefix and was written by a user.
-    unless (isBotCommand message) Nothing
-    parseCmd message
-
-  where
-    parseCmd :: Message -> Maybe Cmd
-    parseCmd msg = do
-        let txt = messageText msg
-        (command : _) <- words <$> T.stripPrefix botPrefix txt
-        case command of
-            "help" -> Just CmdHelp
-            "echo" -> Just CmdEcho
-            _      -> Nothing
-
-    isBotCommand :: Message -> Bool
-    isBotCommand msg = all ($ msg) conditions
-      where
-        conditions :: [Message -> Bool]
-        conditions =
-            [ not . userIsBot . messageAuthor
-            , (botPrefix `T.isPrefixOf`) . messageText
-            ]
+cmdFromMessage :: Exec DiscordHandler (Maybe Cmd)
+cmdFromMessage = do
+    txt <- messageText . envMessage <$> ask
+    Just (command : _) <- pure $ words <$> T.stripPrefix botPrefix txt
+    case command of
+        "help" -> pure . pure $ CmdHelp
+        "echo" -> pure . pure $ CmdEcho
+        _      -> pure Nothing
 
 -- * Utilities.
 
 botPrefix :: Text
 botPrefix = "sw:"
+
+isBotCommand :: Message -> Bool
+isBotCommand msg = all ($ msg) conditions
+    where
+    conditions :: [Message -> Bool]
+    conditions =
+        [ not . userIsBot . messageAuthor
+        , (botPrefix `T.isPrefixOf`) . messageText
+        ]
 
 stripCommand :: Text -> Text
 stripCommand = T.stripStart . snd . T.break (== ' ')
