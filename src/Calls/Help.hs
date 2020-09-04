@@ -13,7 +13,7 @@ import Commands (Exec, CmdEnv (..))
 
 
 cmdHelp :: Exec DiscordHandler (Either RestCallErrorCode Message)
-cmdHelp = ask <&> cmdEnvMessage >>= lift . performCall
+cmdHelp = gets cmdEnvMessage >>= lift . performCall
   where
     performCall :: Message -> DiscordHandler (Either RestCallErrorCode Message)
     performCall triggerMsg = do

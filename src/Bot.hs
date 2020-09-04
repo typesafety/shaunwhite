@@ -22,19 +22,17 @@ instance FromJSON Cfg where
         <$> value .: "requestableRoles"
 
 eventHandler :: Cfg -> Event -> DiscordHandler ()
-eventHandler cfg (MessageCreate msg)
-    | isBotCommand msg = runReaderT handleMsg environment
+eventHandler cfg (MessageCreate msg) =
+    whenJust (guarded isBotCommand msg *> cmdFromMessage msg) evalCmd
   where
+    evalCmd :: Cmd -> DiscordHandler ()
+    evalCmd command = evalStateT (execCmd command) environment
+
     environment :: CmdEnv
     environment = CmdEnv
         { cmdEnvMessage          = msg
         , cmdEnvRequestableRoles = cfgRequestableRoles cfg
         }
-
-    handleMsg :: Exec DiscordHandler ()
-    handleMsg = do
-        Just cmd <- cmdFromMessage
-        execCmd cmd
 eventHandler _ _ = pass
 
 execCmd :: Cmd -> Exec DiscordHandler ()
@@ -45,6 +43,8 @@ execCmd cmd = case cmd of
     CmdHelp -> do
         res <- cmdHelp
         either print print res
+    -- CmdRoleAddRequestable roles -> do
+    --     res <- cmdRoleRequestAdd roles
     _ -> do
         -- TODO: Behavior for this (impossible) case?
         putTextLn $ "execCmd: command not yet implemented: `" <> show cmd <> "`"

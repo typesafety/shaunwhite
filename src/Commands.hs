@@ -14,7 +14,6 @@ module Commands
        , stripCommand
        ) where
 
-import Discord
 import Discord.Types
 
 import qualified Data.Text as T
@@ -22,7 +21,7 @@ import qualified Data.Text as T
 
 -- For bot commands, holds the message that triggered the command.
 -- Used for getting information about the user, the guild, etc.
-type Exec = ReaderT CmdEnv
+type Exec = StateT CmdEnv
 
 data CmdEnv = CmdEnv
     { cmdEnvMessage          :: Message
@@ -39,23 +38,22 @@ data Cmd
     | CmdRoleRequestReq [Text] -- Request roles.
     deriving (Show)
 
-cmdFromMessage :: Exec DiscordHandler (Maybe Cmd)
-cmdFromMessage = do
-    txt <- messageText . cmdEnvMessage <$> ask
-    Just (command : args) <- pure $ words <$> T.stripPrefix botPrefix txt
+cmdFromMessage :: Message -> Maybe Cmd
+cmdFromMessage msg = do
+    Just (command : args) <- pure $ words <$> T.stripPrefix botPrefix (messageText msg)
     case command of
-        "help"        -> pure . pure $ CmdHelp
-        "echo"        -> pure . pure $ CmdEcho
+        "help"        -> Just CmdHelp
+        "echo"        -> Just CmdEcho
         "rolerequest" -> parseRoleRequest args
-        _             -> pure Nothing
+        _             -> Nothing
   where
-    parseRoleRequest :: [Text] -> Exec DiscordHandler (Maybe Cmd)
-    parseRoleRequest [] = pure Nothing
+    parseRoleRequest :: [Text] -> Maybe Cmd
+    parseRoleRequest [] = Nothing
     parseRoleRequest args@(subCmd : roles) = case subCmd of
-        "add" -> pure . pure $ CmdRoleRequestAdd roles
-        "del" -> pure . pure $ CmdRoleRequestDel roles
-        "--"  -> pure . pure $ CmdRoleRequestReq roles
-        _     -> pure . pure $ CmdRoleRequestReq args
+        "add" -> Just $ CmdRoleRequestAdd roles
+        "del" -> Just $ CmdRoleRequestDel roles
+        "--"  -> Just $ CmdRoleRequestReq roles
+        _     -> Just $ CmdRoleRequestReq args
 
 -- * Utilities.
 
