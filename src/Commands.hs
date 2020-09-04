@@ -30,20 +30,21 @@ data CmdEnv = CmdEnv
 
 data Cmd
     = CmdHelp
-    | CmdEcho
+    | CmdEcho Text
 
     -- Commands for role requests.
-    | CmdRoleRequestAdd [Text] -- Set roles as requestable.
-    | CmdRoleRequestDel [Text] -- Make roles non-requestable.
-    | CmdRoleRequestReq [Text] -- Request roles.
+    | CmdRoleRequestAdd [Text]  -- Set roles as requestable.
+    | CmdRoleRequestDel [Text]  -- Make roles non-requestable.
+    | CmdRoleRequestReq [Text]  -- Request roles.
     deriving (Show)
 
 cmdFromMessage :: Message -> Maybe Cmd
 cmdFromMessage msg = do
-    Just (command : args) <- pure $ words <$> T.stripPrefix botPrefix (messageText msg)
+    let msgTxt = messageText msg
+    Just (command : args) <- pure $ words <$> T.stripPrefix botPrefix msgTxt
     case command of
         "help"        -> Just CmdHelp
-        "echo"        -> Just CmdEcho
+        "echo"        -> Just $ CmdEcho (stripCommand command msgTxt)
         "rolerequest" -> parseRoleRequest args
         _             -> Nothing
   where
@@ -69,5 +70,8 @@ isBotCommand msg = all ($ msg) conditions
         , (botPrefix `T.isPrefixOf`) . messageText
         ]
 
-stripCommand :: Text -> Text
-stripCommand = T.stripStart . snd . T.break (== ' ')
+stripCommand
+    :: Text  -- ^ The command (e.g. "echo")
+    -> Text  -- ^ The full text of the message triggering the command (e.g. ">>=echo hey")
+    -> Text  -- ^ The full text, stripped of the prefix and command (e.g. "hey")
+stripCommand command = T.stripStart . T.drop (T.length command) . snd . T.breakOn command

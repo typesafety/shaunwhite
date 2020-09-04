@@ -37,8 +37,8 @@ eventHandler _ _ = pass
 
 execCmd :: Cmd -> Exec DiscordHandler ()
 execCmd cmd = case cmd of
-    CmdEcho -> do
-        res <- cmdEcho
+    CmdEcho txt -> do
+        res <- cmdEcho txt
         either print print res
     CmdHelp -> do
         res <- cmdHelp
