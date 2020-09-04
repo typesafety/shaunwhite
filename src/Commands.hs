@@ -2,7 +2,7 @@ module Commands
        ( -- * ADT representing bot commands.
          Cmd (..)
 
-       , Env (..)
+       , CmdEnv (..)
        , Exec
 
          -- * Parser from Message" to "Cmd".
@@ -22,26 +22,32 @@ import qualified Data.Text as T
 
 -- For bot commands, holds the message that triggered the command.
 -- Used for getting information about the user, the guild, etc.
-type Exec = ReaderT Env
+type Exec = ReaderT CmdEnv
 
-data Env = Env
-    { envMessage :: Message
+data CmdEnv = CmdEnv
+    { cmdEnvMessage          :: Message
+    , cmdEnvRequestableRoles :: [Text]
     }
 
 data Cmd
     = CmdHelp
     | CmdEcho
-    | CmdRoleInvite Text
+
+    -- Commands for role requests.
+    | CmdRoleAddRequestable Text
+    | CmdRoleDelRequestable Text
+    | CmdRoleRequest Text
     deriving (Show)
 
 cmdFromMessage :: Exec DiscordHandler (Maybe Cmd)
 cmdFromMessage = do
-    txt <- messageText . envMessage <$> ask
+    txt <- messageText . cmdEnvMessage <$> ask
     Just (command : _) <- pure $ words <$> T.stripPrefix botPrefix txt
     case command of
-        "help" -> pure . pure $ CmdHelp
-        "echo" -> pure . pure $ CmdEcho
-        _      -> pure Nothing
+        "help"        -> pure . pure $ CmdHelp
+        "echo"        -> pure . pure $ CmdEcho
+        -- "rolerequest" -> pure
+        _             -> pure Nothing
 
 -- * Utilities.
 
