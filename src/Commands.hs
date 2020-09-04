@@ -34,20 +34,28 @@ data Cmd
     | CmdEcho
 
     -- Commands for role requests.
-    | CmdRoleAddRequestable Text
-    | CmdRoleDelRequestable Text
-    | CmdRoleRequest Text
+    | CmdRoleRequestAdd [Text] -- Set roles as requestable.
+    | CmdRoleRequestDel [Text] -- Make roles non-requestable.
+    | CmdRoleRequestReq [Text] -- Request roles.
     deriving (Show)
 
 cmdFromMessage :: Exec DiscordHandler (Maybe Cmd)
 cmdFromMessage = do
     txt <- messageText . cmdEnvMessage <$> ask
-    Just (command : _) <- pure $ words <$> T.stripPrefix botPrefix txt
+    Just (command : args) <- pure $ words <$> T.stripPrefix botPrefix txt
     case command of
         "help"        -> pure . pure $ CmdHelp
         "echo"        -> pure . pure $ CmdEcho
-        -- "rolerequest" -> pure
+        "rolerequest" -> parseRoleRequest args
         _             -> pure Nothing
+  where
+    parseRoleRequest :: [Text] -> Exec DiscordHandler (Maybe Cmd)
+    parseRoleRequest [] = pure Nothing
+    parseRoleRequest args@(subCmd : roles) = case subCmd of
+        "add" -> pure . pure $ CmdRoleRequestAdd roles
+        "del" -> pure . pure $ CmdRoleRequestDel roles
+        "--"  -> pure . pure $ CmdRoleRequestReq roles
+        _     -> pure . pure $ CmdRoleRequestReq args
 
 -- * Utilities.
 
