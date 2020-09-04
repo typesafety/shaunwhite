@@ -60,7 +60,7 @@ cmdFromMessage = do
 -- * Utilities.
 
 botPrefix :: Text
-botPrefix = "sw:"
+botPrefix = ">>="
 
 isBotCommand :: Message -> Bool
 isBotCommand msg = all ($ msg) conditions
