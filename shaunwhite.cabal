@@ -46,14 +46,14 @@ library
                      , Calls.Help
                      , Commands
   build-depends:       text == 1.2.*
+                     , directory == 1.3.*
+                     , filepath == 1.4.*
   hs-source-dirs:      src
 
 executable shaunwhite
   import:              common
   main-is:             Main.hs
   build-depends:       shaunwhite
-                     , directory == 1.3.*
-                     , filepath == 1.4.*
   hs-source-dirs:      app
 
 test-suite shaunwhite-test
