@@ -9,11 +9,13 @@ import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (Message (..), Channel (..), User (..))
 import Discord.Requests (UserRequest (CreateDM), ChannelRequest (CreateMessage))
 
-import Commands (Exec, CmdEnv (..))
+import Env (Shaun, getMsg)
 
 
-cmdHelp :: Exec DiscordHandler (Either RestCallErrorCode Message)
-cmdHelp = gets cmdEnvMessage >>= lift . performCall
+cmdHelp :: Shaun DiscordHandler (Either RestCallErrorCode Message)
+cmdHelp = do
+    Just msg <- getMsg
+    lift $ performCall msg
   where
     performCall :: Message -> DiscordHandler (Either RestCallErrorCode Message)
     performCall triggerMsg = do

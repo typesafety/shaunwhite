@@ -4,7 +4,8 @@ module Main
 
 import Discord (def, runDiscord, RunDiscordOpts (..))
 
-import Bot (eventHandler, getConfig)
+import qualified Bot
+import qualified Env
 
 
 main :: IO ()
@@ -14,13 +15,13 @@ main = do
     putTextLn "Reading bot token..."
     botToken <- readFileText "token"
 
-    -- Read config file to set up/restore initial environment.
-    cfg <- getConfig
+    -- Set up initial environment.
+    initialEnv <- Env.initEnv
 
     let discordOpts :: RunDiscordOpts
         discordOpts =
             def { discordToken   = botToken
-                , discordOnEvent = eventHandler cfg
+                , discordOnEvent = Bot.eventHandler initialEnv
                 }
 
     putTextLn "Ready."
@@ -28,4 +29,3 @@ main = do
     putTextLn userFacingError
 
     putStrLn "Finished."
-

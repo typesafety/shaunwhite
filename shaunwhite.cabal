@@ -45,6 +45,7 @@ library
                      , Calls.Echo
                      , Calls.Help
                      , Commands
+                     , Env
   build-depends:       text == 1.2.*
                      , directory == 1.3.*
                      , filepath == 1.4.*

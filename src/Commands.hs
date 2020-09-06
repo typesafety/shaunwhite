@@ -2,9 +2,6 @@ module Commands
        ( -- * ADT representing bot commands.
          Cmd (..)
 
-       , CmdEnv (..)
-       , Exec
-
          -- * Parser from Message" to "Cmd".
        , cmdFromMessage
 
@@ -14,19 +11,10 @@ module Commands
        , stripCommand
        ) where
 
-import Discord.Types
+import Discord.Types (Message (..), userIsBot)
 
 import qualified Data.Text as T
 
-
--- For bot commands, holds the message that triggered the command.
--- Used for getting information about the user, the guild, etc.
-type Exec = StateT CmdEnv
-
-data CmdEnv = CmdEnv
-    { cmdEnvMessage          :: Message
-    , cmdEnvRequestableRoles :: [Text]
-    }
 
 data Cmd
     = CmdHelp
