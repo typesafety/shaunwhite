@@ -2,7 +2,9 @@ module Main
        ( main
        ) where
 
-import Discord (def, runDiscord, RunDiscordOpts (..))
+import Discord (RunDiscordOpts (..))
+
+import qualified Discord
 
 import qualified Bot
 import qualified Env
@@ -20,12 +22,12 @@ main = do
 
     let discordOpts :: RunDiscordOpts
         discordOpts =
-            def { discordToken   = botToken
-                , discordOnEvent = Bot.eventHandler initialEnv
-                }
+            Discord.def { discordToken   = botToken
+                        , discordOnEvent = Bot.eventHandler initialEnv
+                        }
 
     putTextLn "Ready."
-    userFacingError <- runDiscord discordOpts
+    userFacingError <- Discord.runDiscord discordOpts
     putTextLn userFacingError
 
     putStrLn "Finished."

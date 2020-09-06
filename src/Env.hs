@@ -1,9 +1,12 @@
 module Env
        ( Shaun
-       , Env
+
+       , Env (..)
+       , CmdEnv (..)
        , initEnv
        , getMsg
        , setMsg
+       , modEnv
        ) where
 
 import Data.Aeson (FromJSON, parseJSON, withObject, (.:), decodeFileStrict')
@@ -13,11 +16,12 @@ import System.Directory (getXdgDirectory, XdgDirectory (XdgConfig))
 import System.FilePath ((</>))
 import System.IO.Error (catchIOError, IOError)
 
+import qualified Data.Set as S
 
 -- * Bot configuration
 
 data Config = Config
-    { cfgRequestableRoles :: [Text]
+    { cfgRequestableRoles :: ![Text]
     }
 
 instance FromJSON Config where
@@ -64,7 +68,7 @@ initEnv = do
     -- Initialize the (mutable) runtime environment.
     cmdEnv <- newTVarIO $ CmdEnv
         { cmdEnvMessage          = Nothing
-        , cmdEnvRequestableRoles = cfgRequestableRoles cfg
+        , cmdEnvRequestableRoles = S.fromList $ cfgRequestableRoles cfg
         }
 
     return $ Env
@@ -77,10 +81,16 @@ data CmdEnv = CmdEnv
     { -- | The message that triggered the current command.
       cmdEnvMessage          :: !(Maybe Message)
       -- | Names of roles that can be requested by any user.
-    , cmdEnvRequestableRoles :: ![Text]
+    , cmdEnvRequestableRoles :: !(Set Text)
     }
+    deriving (Show)
 
 -- * Convenient functions
+
+modEnv :: (CmdEnv -> CmdEnv) -> Shaun DiscordHandler ()
+modEnv f = do
+    tCmdEnv <- envCmdEnv <$> ask
+    liftIO $ atomically $ modifyTVar' tCmdEnv f
 
 getMsg :: Shaun DiscordHandler (Maybe Message)
 getMsg = do
@@ -88,9 +98,4 @@ getMsg = do
     cmdEnvMessage <$> liftIO (readTVarIO tCmdEnv)
 
 setMsg :: Message -> Shaun DiscordHandler ()
-setMsg msg = do
-    tCmdEnv <- envCmdEnv <$> ask
-    liftIO $ atomically $ modifyTVar' tCmdEnv set
-  where
-    set :: CmdEnv -> CmdEnv
-    set cmdEnv = cmdEnv { cmdEnvMessage = Just msg }
+setMsg msg = modEnv $ \ cmdEnv -> cmdEnv { cmdEnvMessage = Just msg }
