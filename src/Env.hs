@@ -19,6 +19,7 @@ import System.IO.Error (catchIOError, IOError)
 
 import qualified Data.Set as S
 
+
 -- * Bot configuration
 
 data Config = Config

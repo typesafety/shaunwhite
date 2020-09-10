@@ -7,11 +7,12 @@ module Auth
        ) where
 
 import Data.Bits ((.&.))
-import Discord
-import Discord.Types
-import Discord.Requests
+import Discord (restCall, DiscordHandler, RestCallErrorCode)
+import Discord.Types (Message (..), Guild (..), GuildMember (..), Role (..), User (..))
+import Discord.Requests (GuildRequest (GetGuildMember, GetGuild))
 
 import qualified Env
+
 
 -- | Check if a member of a Guild is an admin of that Guild.
 isAdminOf :: GuildMember -> Guild -> Bool
