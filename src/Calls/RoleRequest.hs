@@ -5,13 +5,20 @@ module Calls.RoleRequest
        ( cmdRoleRequestAdd
        , cmdRoleRequestDel
        , cmdRoleRequestList
-    --    , cmdRoleRequestReq
+       , cmdRoleRequestReq
        ) where
 
-import Discord
--- import Discord (DiscordHandler, RestCallErrorCode, restCall)
+import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types
+       ( Message (messageAuthor, messageGuild, messageChannel)
+       , Role (roleId, roleName)
+       , RoleId
+       , User (userId)
+       )
 import Discord.Requests
+       ( ChannelRequest (CreateMessage)
+       , GuildRequest (AddGuildMemberRole, GetGuildRoles)
+       )
 
 import Env (CmdEnv (..))
 
@@ -20,6 +27,7 @@ import qualified Data.Text as T
 
 import qualified Auth
 import qualified Env
+
 
 -- * Commands
 
@@ -53,6 +61,33 @@ cmdRoleRequestList = do
 
         return $ CreateMessage channel txt
 
+cmdRoleRequestReq :: [Text] -> Env.Shaun DiscordHandler (Either RestCallErrorCode ())
+cmdRoleRequestReq roles = do
+    cmdEnv <- Env.getCmdEnv
+
+    Just triggerMsg <- pure $ cmdEnvMessage cmdEnv
+    Just gId <- pure $ messageGuild triggerMsg
+
+    Right gRoles <- lift $ restCall $ GetGuildRoles gId
+    let rolesToAdd =
+            filter
+                (\ r -> (roleName r `S.member` cmdEnvRequestableRoles cmdEnv)
+                     && (roleName r `elem` roles))
+                gRoles
+
+    let uId = userId . messageAuthor $ triggerMsg
+
+    let request :: RoleId -> DiscordHandler (Either RestCallErrorCode ())
+        request rId = restCall $ AddGuildMemberRole gId uId rId
+
+    getRes <$> mapM (lift . request . roleId) rolesToAdd
+
+  where
+    getRes :: [Either RestCallErrorCode ()] -> Either RestCallErrorCode ()
+    getRes []                  = Right ()
+    getRes (Right ()     : xs) = getRes xs
+    getRes (Left errCode : _)  = Left errCode
+
 -- * Helper functions for generalization of add/del operations.
 
 addDel
@@ -63,7 +98,8 @@ addDel
 addDel action roles = do
     Just msg <- Env.getMsg
     Auth.authAndRunWithMsg msg () $ do
-        Right gRoles <- guildRolesFromMsg msg
+        Just gId <- pure $ messageGuild msg
+        Right gRoles <- lift $ restCall $ GetGuildRoles gId
 
         let validRoleNames :: Set Text
             validRoleNames =
@@ -72,10 +108,3 @@ addDel action roles = do
         action validRoleNames
 
         pure . Right $ ()
-
-guildRolesFromMsg
-    :: Message
-    -> Env.Shaun DiscordHandler (Either RestCallErrorCode [Role])
-guildRolesFromMsg msg = do
-    Just gId <- pure $ messageGuild msg
-    lift $ restCall (GetGuildRoles gId)

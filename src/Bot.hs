@@ -11,6 +11,7 @@ import Calls.RoleRequest
        ( cmdRoleRequestAdd
        , cmdRoleRequestDel
        , cmdRoleRequestList
+       , cmdRoleRequestReq
        )
 import Commands (Cmd (..), cmdFromMessage, isBotCommand)
 
@@ -48,6 +49,9 @@ execCmd cmd = case cmd of
         either print print res
     CmdRoleRequestList -> do
         res <- cmdRoleRequestList
+        either print print res
+    CmdRoleRequestReq roles -> do
+        res <- cmdRoleRequestReq roles
         either print print res
     _ -> do
         -- TODO: Behavior for this (impossible) case?
