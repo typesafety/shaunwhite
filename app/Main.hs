@@ -3,7 +3,10 @@ module Main
        ) where
 
 import Discord (RunDiscordOpts (..))
+import System.Directory (doesFileExist, getHomeDirectory)
+import System.FilePath ((</>))
 
+import qualified Data.Text as T
 import qualified Discord
 
 import qualified Bot
@@ -15,7 +18,7 @@ main = do
     putTextLn "Starting shaunwhite..."
 
     putTextLn "Reading bot token..."
-    botToken <- readFileText "token"
+    botToken <- readFileText =<< getTokenPath
 
     -- Set up initial environment.
     initialEnv <- Env.initEnv
@@ -31,3 +34,23 @@ main = do
     putTextLn userFacingError
 
     putStrLn "Finished."
+
+  where
+    getTokenPath :: IO FilePath
+    getTokenPath = do
+        homeDir <- getHomeDirectory
+
+        let tokenLocations :: [FilePath]
+            tokenLocations = [homeDir </> ".shaunwhite.token", "token"]
+
+        searchFile tokenLocations
+      where
+        searchFile :: [FilePath] -> IO FilePath
+        searchFile []          = do
+            putTextLn "Could not find/read bot token."
+            exitFailure
+        searchFile (path : xs) = do
+            putTextLn $ "Attempting to read token from `" <> T.pack path <> "`..."
+            doesFileExist path >>= \case
+                True  -> return path
+                False -> searchFile xs
