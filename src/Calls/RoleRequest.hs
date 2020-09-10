@@ -4,6 +4,7 @@ Request to be added to a role, add or delete requestable roles
 module Calls.RoleRequest
        ( cmdRoleRequestAdd
        , cmdRoleRequestDel
+       , cmdRoleRequestList
     --    , cmdRoleRequestReq
        ) where
 
@@ -15,6 +16,7 @@ import Discord.Requests
 import Env (CmdEnv (..))
 
 import qualified Data.Set as S
+import qualified Data.Text as T
 
 import qualified Auth
 import qualified Env
@@ -34,6 +36,22 @@ cmdRoleRequestDel = addDel delRoles
     delRoles :: Set Text -> Env.Shaun DiscordHandler ()
     delRoles roles = Env.modEnv $ \ cmdEnv ->
         cmdEnv { cmdEnvRequestableRoles = cmdEnvRequestableRoles cmdEnv S.\\ roles }
+
+cmdRoleRequestList :: Env.Shaun DiscordHandler (Either RestCallErrorCode Message)
+cmdRoleRequestList = do
+    msg <- prepMessage
+    lift $ restCall msg
+  where
+    prepMessage :: Env.Shaun DiscordHandler (ChannelRequest Message)
+    prepMessage = do
+        cmdEnv <- Env.getCmdEnv
+        let requestables = S.toList $ cmdEnvRequestableRoles cmdEnv
+        let txt = "Requestable roles:\n" <> T.intercalate "\n" requestables
+
+        Just triggerMsg <- Env.getMsg
+        let channel = messageChannel triggerMsg
+
+        return $ CreateMessage channel txt
 
 -- * Helper functions for generalization of add/del operations.
 

@@ -24,6 +24,7 @@ data Cmd
     | CmdRoleRequestAdd [Text]  -- Set roles as requestable.
     | CmdRoleRequestDel [Text]  -- Make roles non-requestable.
     | CmdRoleRequestReq [Text]  -- Request roles.
+    | CmdRoleRequestList        -- Show requestable roles.
     deriving (Show)
 
 cmdFromMessage :: Message -> Maybe Cmd
@@ -38,11 +39,12 @@ cmdFromMessage msg = do
   where
     parseRoleRequest :: [Text] -> Maybe Cmd
     parseRoleRequest [] = Nothing
-    parseRoleRequest args@(subCmd : roles) = case subCmd of
-        "add" -> Just $ CmdRoleRequestAdd roles
-        "del" -> Just $ CmdRoleRequestDel roles
-        "--"  -> Just $ CmdRoleRequestReq roles
-        _     -> Just $ CmdRoleRequestReq args
+    parseRoleRequest args@(subCmd : roles) = Just $ case subCmd of
+        "add"  -> CmdRoleRequestAdd roles
+        "del"  -> CmdRoleRequestDel roles
+        "list" -> CmdRoleRequestList
+        "--"   -> CmdRoleRequestReq roles
+        _      -> CmdRoleRequestReq args
 
 -- * Utilities.
 

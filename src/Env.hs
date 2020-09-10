@@ -7,6 +7,7 @@ module Env
        , getMsg
        , setMsg
        , modEnv
+       , getCmdEnv
        ) where
 
 import Data.Aeson (FromJSON, parseJSON, withObject, (.:), decodeFileStrict')
@@ -99,3 +100,8 @@ getMsg = do
 
 setMsg :: Message -> Shaun DiscordHandler ()
 setMsg msg = modEnv $ \ cmdEnv -> cmdEnv { cmdEnvMessage = Just msg }
+
+getCmdEnv :: Shaun DiscordHandler CmdEnv
+getCmdEnv = do
+    tCmdEnv <- envCmdEnv <$> ask
+    liftIO $ readTVarIO tCmdEnv

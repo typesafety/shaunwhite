@@ -7,7 +7,11 @@ import Discord.Types (Event (MessageCreate))
 
 import Calls.Echo (cmdEcho)
 import Calls.Help (cmdHelp)
-import Calls.RoleRequest (cmdRoleRequestAdd, cmdRoleRequestDel)
+import Calls.RoleRequest
+       ( cmdRoleRequestAdd
+       , cmdRoleRequestDel
+       , cmdRoleRequestList
+       )
 import Commands (Cmd (..), cmdFromMessage, isBotCommand)
 
 import qualified Env
@@ -41,6 +45,9 @@ execCmd cmd = case cmd of
         either print print res
     CmdRoleRequestDel roles -> do
         res <- cmdRoleRequestDel roles
+        either print print res
+    CmdRoleRequestList -> do
+        res <- cmdRoleRequestList
         either print print res
     _ -> do
         -- TODO: Behavior for this (impossible) case?
