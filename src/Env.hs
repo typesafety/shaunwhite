@@ -10,13 +10,15 @@ module Env
        , getCmdEnv
        ) where
 
-import Data.Aeson (FromJSON, parseJSON, withObject, (.:), decodeFileStrict')
+import Control.Monad.Extra (findM)
+import Data.Aeson (FromJSON, ToJSON, (.:), (.=))
 import Discord (DiscordHandler)
 import Discord.Types (Message)
-import System.Directory (getXdgDirectory, XdgDirectory (XdgConfig))
+import System.Directory (getXdgDirectory, XdgDirectory (XdgConfig), doesFileExist)
 import System.FilePath ((</>))
-import System.IO.Error (catchIOError, IOError)
+import System.IO.Error (catchIOError, tryIOError, IOError)
 
+import qualified Data.Aeson as Aeson
 import qualified Data.Set as S
 
 
@@ -27,27 +29,34 @@ data Config = Config
     }
 
 instance FromJSON Config where
-    parseJSON = withObject "Config" $ \ value -> Config
+    parseJSON = Aeson.withObject "Config" $ \ value -> Config
         <$> value .: "requestableRoles"
+
+instance ToJSON Config where
+    toJSON cfg = Aeson.object
+        [ "requestableRoles" .= cfgRequestableRoles cfg
+        ]
 
 defaultConfig :: Config
 defaultConfig = Config
     { cfgRequestableRoles = []
     }
 
-getConfigLocation :: IO FilePath
-getConfigLocation = getXdgDirectory XdgConfig "shaunwhite" <&> (</> "config")
+getConfigLocation :: IO (Maybe FilePath)
+getConfigLocation = do
+    xdgDir <- getXdgDirectory XdgConfig "shaunwhite"
+    let locations :: [FilePath]
+        locations =
+            [ xdgDir </> "config"
+            ]
+    findM doesFileExist locations
 
-getConfig :: IO Config
+getConfig :: IO (Config, FilePath)
 getConfig = do
-    cfgLocation <- getConfigLocation
+    Just cfgLocation <- getConfigLocation
     putTextLn $ "Reading config file from `" <> fromString cfgLocation <> "`"
-    mbyCfg <- catchIOError (decodeFileStrict' cfgLocation) handleRead
-    case mbyCfg of
-        Just c -> return c
-        Nothing -> do
-            putTextLn "Failed to read config file, using default config."
-            return defaultConfig
+    Just cfg <- catchIOError (Aeson.decodeFileStrict' cfgLocation) handleRead
+    return (cfg, cfgLocation)
   where
     handleRead :: IOError -> IO (Maybe Config)
     handleRead err = do
@@ -59,13 +68,19 @@ getConfig = do
 type Shaun = ReaderT Env
 
 data Env = Env
-    { envCmdEnv :: !(TVar CmdEnv)
+    { envCmdEnv  :: !(TVar CmdEnv)
+    , envCfgPath :: !FilePath
     }
 
 initEnv :: IO Env
 initEnv = do
     -- Read the config file.
-    cfg <- getConfig
+    (cfg, cfgPath) <- tryIOError getConfig >>= \case
+        Right x  -> return x
+        Left err -> do
+            print err
+            putTextLn "Config error, using default config."
+            return defaultCfg
 
     -- Initialize the (mutable) runtime environment.
     cmdEnv <- newTVarIO $ CmdEnv
@@ -75,7 +90,11 @@ initEnv = do
 
     return $ Env
         { envCmdEnv = cmdEnv
+        , envCfgPath = cfgPath
         }
+  where
+    defaultCfg :: (Config, FilePath)
+    defaultCfg = (defaultConfig, "shaunwhite.confg")
 
 -- * Environment while running the bot
 
