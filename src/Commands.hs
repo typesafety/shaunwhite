@@ -25,6 +25,9 @@ data Cmd
     | CmdRoleRequestDel [Text]  -- Make roles non-requestable.
     | CmdRoleRequestReq [Text]  -- Request roles.
     | CmdRoleRequestList        -- Show requestable roles.
+
+    -- Writing the config file.
+    | CmdCfgWrite
     deriving (Show)
 
 cmdFromMessage :: Message -> Maybe Cmd
@@ -35,8 +38,13 @@ cmdFromMessage msg = do
         "help"        -> Just CmdHelp
         "echo"        -> Just $ CmdEcho (stripCommand command msgTxt)
         "rolerequest" -> parseRoleRequest args
+        "config"      -> parseCfg args
         _             -> Nothing
   where
+    parseCfg :: [Text] -> Maybe Cmd
+    parseCfg ["write"] = Just CmdCfgWrite
+    parseCfg _         = Nothing
+
     parseRoleRequest :: [Text] -> Maybe Cmd
     parseRoleRequest [] = Nothing
     parseRoleRequest args@(subCmd : roles) = Just $ case subCmd of

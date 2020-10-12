@@ -8,6 +8,7 @@ module Env
        , setMsg
        , modEnv
        , getCmdEnv
+       , writeConfig
        ) where
 
 import Control.Monad.Extra (findM)
@@ -62,6 +63,21 @@ getConfig = do
     handleRead err = do
         print err
         return Nothing
+
+-- | Write persistent values from the environment to the config on disk.
+writeConfig :: Env -> IO ()
+writeConfig env = do
+    cfg <- envToConfig env
+    -- For now, just print out errors if they occur.
+    catchIOError (Aeson.encodeFile (envCfgPath env) cfg) print
+  where
+    -- Extract values that should persist from the environment.
+    envToConfig :: Env -> IO Config
+    envToConfig e = do
+        cmdEnv <- readTVarIO $ envCmdEnv e
+        return $ Config
+            { cfgRequestableRoles = S.toList $ cmdEnvRequestableRoles cmdEnv
+            }
 
 -- * Environment
 

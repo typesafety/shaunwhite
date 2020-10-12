@@ -41,6 +41,8 @@ execCmd cmd = case cmd of
     CmdHelp -> do
         res <- cmdHelp
         either print print res
+
+    -- Roles
     CmdRoleRequestAdd roles -> do
         res <- cmdRoleRequestAdd roles
         either print print res
@@ -53,6 +55,12 @@ execCmd cmd = case cmd of
     CmdRoleRequestReq roles -> do
         res <- cmdRoleRequestReq roles
         either print print res
+
+    -- Config
+    CmdCfgWrite -> do
+        env <- ask
+        liftIO $ Env.writeConfig env
+
     _ -> do
         -- TODO: Behavior for this (impossible) case?
         putTextLn $ "execCmd: command not yet implemented: `" <> show cmd <> "`"
