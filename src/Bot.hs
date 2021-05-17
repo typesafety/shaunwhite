@@ -58,6 +58,7 @@ execCmd cmd = case cmd of
 
     -- Config
     CmdCfgWrite -> do
+        -- TODO: make this command admin-only (p l s)
         env <- ask
         liftIO $ Env.writeConfig env
 
