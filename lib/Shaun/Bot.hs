@@ -61,8 +61,3 @@ execCmd cmd = case cmd of
         -- TODO: make this command admin-only (p l s)
         env <- ask
         liftIO $ Env.writeConfig env
-
-    _ -> do
-        -- TODO: Behavior for this (impossible) case?
-        putTextLn $ "execCmd: command not yet implemented: `" <> show cmd <> "`"
-        putTextLn "pls fix."

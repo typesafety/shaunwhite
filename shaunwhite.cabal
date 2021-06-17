@@ -26,6 +26,7 @@ library
   exposed-modules:
       Shaun.Auth
       Shaun.Bot
+      Shaun.Calls.Config
       Shaun.Calls.Echo
       Shaun.Calls.Help
       Shaun.Calls.RoleRequest
