@@ -1,7 +1,7 @@
 {- |
 Request to be added to a role, add or delete requestable roles
 -}
-module Calls.RoleRequest
+module Shaun.Calls.RoleRequest
        ( cmdRoleRequestAdd
        , cmdRoleRequestDel
        , cmdRoleRequestList
@@ -22,13 +22,12 @@ import Discord.Requests
        , GuildRequest (AddGuildMemberRole, GetGuildRoles)
        )
 
-import Env (CmdEnv (..))
-
 import qualified Data.Set as S
 import qualified Data.Text as T
 
-import qualified Auth
-import qualified Env
+import qualified Shaun.Auth as Auth
+import           Shaun.Env (CmdEnv (..))
+import qualified Shaun.Env as Env
 
 
 -- * Commands

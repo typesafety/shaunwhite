@@ -11,8 +11,8 @@ import System.FilePath ((</>))
 import qualified Data.Text as T
 import qualified Discord
 
-import qualified Bot
-import qualified Env
+import qualified Shaun.Bot as Bot
+import qualified Shaun.Env as Env
 
 
 main :: IO ()

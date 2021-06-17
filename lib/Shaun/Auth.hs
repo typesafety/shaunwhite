@@ -1,7 +1,7 @@
 {- |
 TODO: Allow for more granularity (i.e. more control than "is admin? yes/no").
 -}
-module Auth
+module Shaun.Auth
        ( isAdminOf
        , authAndRunWithMsg
        ) where
@@ -13,7 +13,7 @@ import Discord (restCall, DiscordHandler, RestCallErrorCode)
 import Discord.Types (Message (..), Guild (..), GuildMember (..), Role (..), User (..))
 import Discord.Requests (GuildRequest (GetGuildMember, GetGuild))
 
-import qualified Env
+import Shaun.Env (Shaun)
 
 
 -- | Check if a member of a Guild is an admin of that Guild.
@@ -35,9 +35,9 @@ isAdminOf member guild =
 authAndRunWithMsg
     :: Message  -- ^ Message, from which to determine whether to run the command or not.
     -> a        -- ^ Default value to if command was not authorized.
-    -> Env.Shaun DiscordHandler (Either RestCallErrorCode a)
+    -> Shaun DiscordHandler (Either RestCallErrorCode a)
                 -- ^ Command to run if authorization was successful.
-    -> Env.Shaun DiscordHandler (Either RestCallErrorCode a)
+    -> Shaun DiscordHandler (Either RestCallErrorCode a)
 authAndRunWithMsg msg defaultValue cmdToRun = do
     Just gId <- pure $ messageGuild msg
     Right guild <- lift $ restCall (GetGuild gId)

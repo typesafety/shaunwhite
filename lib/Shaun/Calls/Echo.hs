@@ -1,7 +1,7 @@
 {- |
 Echoes the parameter of the command message.
 -}
-module Calls.Echo
+module Shaun.Calls.Echo
        ( cmdEcho
        ) where
 
@@ -11,12 +11,12 @@ import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (ChannelId, Message (..))
 import Discord.Requests (ChannelRequest (CreateMessage))
 
-import qualified Env (Shaun, getMsg)
+import Shaun.Env (Shaun, getMsg)
 
 
-cmdEcho :: Text -> Env.Shaun DiscordHandler (Either RestCallErrorCode Message)
+cmdEcho :: Text -> Shaun DiscordHandler (Either RestCallErrorCode Message)
 cmdEcho txt = do
-    Just msg <- Env.getMsg
+    Just msg <- getMsg
     lift $ performCall msg
   where
     performCall :: Message -> DiscordHandler (Either RestCallErrorCode Message)

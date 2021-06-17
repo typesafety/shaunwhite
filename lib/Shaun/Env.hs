@@ -1,4 +1,4 @@
-module Env
+module Shaun.Env
        ( Shaun
 
        , Env (..)

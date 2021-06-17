@@ -1,4 +1,4 @@
-module Commands
+module Shaun.Commands
        ( -- * ADT representing bot commands.
          Cmd (..)
 
@@ -7,7 +7,7 @@ module Commands
 
          -- * Utilities.
        , botPrefix
-       , isBotCommand
+       , isCommandForBot
        , stripCommand
        ) where
 
@@ -19,19 +19,21 @@ import qualified Data.Text as T
 
 
 data Cmd
-    = CmdHelp
-    | CmdEcho Text
+    = CmdHelp       -- ^ TODO
+    | CmdEcho Text  -- ^ Output the provided string.
 
     -- Commands for role requests.
-    | CmdRoleRequestAdd [Text]  -- Set roles as requestable.
-    | CmdRoleRequestDel [Text]  -- Make roles non-requestable.
-    | CmdRoleRequestReq [Text]  -- Request roles.
-    | CmdRoleRequestList        -- Show requestable roles.
+    | CmdRoleRequestAdd [Text]  -- ^ Set roles as requestable.
+    | CmdRoleRequestDel [Text]  -- ^ Make roles non-requestable.
+    | CmdRoleRequestReq [Text]  -- ^ Request roles.
+    | CmdRoleRequestList        -- ^ Output requestable roles.
 
-    -- Writing the config file.
+    -- | Write the config file to disk.
     | CmdCfgWrite
     deriving (Show)
 
+-- | Attempt to parse a 'Message' into a 'Cmd', whitespace-insensitive.
+-- TODO: Better parsing implementation, this thing below is fragile af
 cmdFromMessage :: Message -> Maybe Cmd
 cmdFromMessage msg = do
     let msgTxt = messageText msg
@@ -61,8 +63,14 @@ cmdFromMessage msg = do
 botPrefix :: Text
 botPrefix = ">>="
 
-isBotCommand :: Message -> Bool
-isBotCommand msg = all ($ msg) conditions
+-- | Determine whether the bot should care about the message at all.
+--
+-- Conditions:
+--
+-- * Message was not sent by a bot.
+-- * The text of the message is prefixed by the text given by 'botPrefix'.
+isCommandForBot :: Message -> Bool
+isCommandForBot msg = all ($ msg) conditions
     where
     conditions :: [Message -> Bool]
     conditions =
@@ -70,6 +78,9 @@ isBotCommand msg = all ($ msg) conditions
         , (botPrefix `T.isPrefixOf`) . messageText
         ]
 
+-- | Clean a command from the bot prefix and extra whitespace.
+-- >>> stripCommand "echo" ">>= echo hey"
+-- "hey"
 stripCommand
     :: Text  -- ^ The command (e.g. "echo")
     -> Text  -- ^ The full text of the message triggering the command (e.g. ">>=echo hey")

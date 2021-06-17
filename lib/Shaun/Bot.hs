@@ -1,4 +1,4 @@
-module Bot
+module Shaun.Bot
        ( eventHandler
        ) where
 
@@ -7,24 +7,22 @@ import Relude
 import Discord (DiscordHandler)
 import Discord.Types (Event (MessageCreate))
 
-import Calls.Echo (cmdEcho)
-import Calls.Help (cmdHelp)
-import Calls.RoleRequest
+import Shaun.Calls.Echo (cmdEcho)
+import Shaun.Calls.Help (cmdHelp)
+import Shaun.Calls.RoleRequest
        ( cmdRoleRequestAdd
        , cmdRoleRequestDel
        , cmdRoleRequestList
        , cmdRoleRequestReq
        )
-import Commands (Cmd (..), cmdFromMessage, isBotCommand)
-
-import qualified Env
-
+import Shaun.Commands (Cmd (..), cmdFromMessage, isCommandForBot)
+import qualified Shaun.Env as Env
 
 -- * Event handler and command execution
 
 eventHandler :: Env.Env -> Event -> DiscordHandler ()
 eventHandler env (MessageCreate msg) =
-    whenJust (guarded isBotCommand msg *> cmdFromMessage msg) run
+    whenJust (guarded isCommandForBot msg *> cmdFromMessage msg) run
   where
     run :: Cmd -> DiscordHandler ()
     run cmd = do

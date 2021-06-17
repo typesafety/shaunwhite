@@ -28,9 +28,16 @@ dependencies:
 - text
 
 executables:
-  shaunwhite:
+  shaunwhite-exe:
     main: Main.hs
-    source-dirs: src
+    source-dirs: app
+    dependencies:
+    - shaunwhite
+
+# The majority of the code resides here, and is only separated from the
+# "executables" to make Haddock generation easier.
+library:
+  source-dirs: lib
 
 default-extensions:
 # Disable implicit Prelude imports. Import the Relude module(s) explicitly

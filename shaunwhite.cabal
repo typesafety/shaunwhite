@@ -22,19 +22,19 @@ source-repository head
   type: git
   location: https://github.com/typesafety/shaunwhite
 
-executable shaunwhite
-  main-is: Main.hs
+library
+  exposed-modules:
+      Shaun.Auth
+      Shaun.Bot
+      Shaun.Calls.Echo
+      Shaun.Calls.Help
+      Shaun.Calls.RoleRequest
+      Shaun.Commands
+      Shaun.Env
   other-modules:
-      Auth
-      Bot
-      Calls.Echo
-      Calls.Help
-      Calls.RoleRequest
-      Commands
-      Env
       Paths_shaunwhite
   hs-source-dirs:
-      src
+      lib
   default-extensions:
       NoImplicitPrelude
       LambdaCase
@@ -49,5 +49,29 @@ executable shaunwhite
     , extra
     , filepath
     , relude
+    , text
+  default-language: Haskell2010
+
+executable shaunwhite-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_shaunwhite
+  hs-source-dirs:
+      app
+  default-extensions:
+      NoImplicitPrelude
+      LambdaCase
+      OverloadedStrings
+  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , containers
+    , directory
+    , discord-haskell
+    , extra
+    , filepath
+    , relude
+    , shaunwhite
     , text
   default-language: Haskell2010

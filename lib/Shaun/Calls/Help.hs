@@ -1,7 +1,7 @@
 {- |
 Sends a DM to the user with instructions for using the bot.
 -}
-module Calls.Help
+module Shaun.Calls.Help
        ( cmdHelp
        ) where
 
@@ -11,12 +11,12 @@ import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (Message (..), Channel (..), User (..))
 import Discord.Requests (UserRequest (CreateDM), ChannelRequest (CreateMessage))
 
-import qualified Env (Shaun, getMsg)
+import Shaun.Env (Shaun, getMsg)
 
 
-cmdHelp :: Env.Shaun DiscordHandler (Either RestCallErrorCode Message)
+cmdHelp :: Shaun DiscordHandler (Either RestCallErrorCode Message)
 cmdHelp = do
-    Just msg <- Env.getMsg
+    Just msg <- getMsg
     lift $ performCall msg
   where
     performCall :: Message -> DiscordHandler (Either RestCallErrorCode Message)
