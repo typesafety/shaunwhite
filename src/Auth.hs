@@ -8,7 +8,7 @@ module Auth
 
 import Relude
 
-import Data.Bits ((.&.))
+import Data.Bits (testBit)
 import Discord (restCall, DiscordHandler, RestCallErrorCode)
 import Discord.Types (Message (..), Guild (..), GuildMember (..), Role (..), User (..))
 import Discord.Requests (GuildRequest (GetGuildMember, GetGuild))
@@ -27,10 +27,10 @@ isAdminOf member guild =
     -- Discord permissions are calculated using bitwise operations, see:
     -- https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
     roleIsAdmin :: Role -> Bool
-    roleIsAdmin = (adminBit ==) . (adminBit .&.) . rolePerms
+    roleIsAdmin = (`testBit` adminBit) . rolePerms
       where
-        adminBit :: Integer
-        adminBit = 0x00000008
+        adminBit :: Int
+        adminBit = 3  -- 0x00000008, (1 << 3)
 
 authAndRunWithMsg
     :: Message  -- ^ Message, from which to determine whether to run the command or not.
