@@ -2,6 +2,8 @@ module Main
        ( main
        ) where
 
+import Relude
+
 import Discord (RunDiscordOpts (..))
 import System.Directory (doesFileExist, getHomeDirectory)
 import System.FilePath ((</>))

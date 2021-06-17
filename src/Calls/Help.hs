@@ -5,6 +5,8 @@ module Calls.Help
        ( cmdHelp
        ) where
 
+import Relude
+
 import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (Message (..), Channel (..), User (..))
 import Discord.Requests (UserRequest (CreateDM), ChannelRequest (CreateMessage))

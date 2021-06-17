@@ -5,6 +5,8 @@ module Calls.Echo
        ( cmdEcho
        ) where
 
+import Relude
+
 import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types (ChannelId, Message (..))
 import Discord.Requests (ChannelRequest (CreateMessage))

@@ -1,0 +1,56 @@
+name:                shaunwhite
+version:             0.1.0.0
+github:              "typesafety/shaunwhite"
+license:             MIT
+author:              "Thomas Li"
+maintainer:          "guslithd@student.gu.se"
+copyright:           "2021 Thomas Li"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+dependencies:
+# Use Relude in place of the default Prelude from base (see the use of
+# -XNoImplicitPrelude).
+- base
+- relude
+
+# extra-deps
+- discord-haskell
+
+# Other dependencies
+- aeson
+- containers
+- directory
+- extra
+- filepath
+- text
+
+executables:
+  shaunwhite:
+    main: Main.hs
+    source-dirs: src
+
+default-extensions:
+# Disable implicit Prelude imports. Import the Relude module(s) explicitly
+# instead.
+- NoImplicitPrelude
+
+- LambdaCase
+- OverloadedStrings
+
+ghc-options:
+# Warnings
+- -Wall
+- -Wcompat
+- -Wincomplete-uni-patterns
+- -Wincomplete-record-updates
+- -Widentities
+- -Wmissing-export-lists
+- -Wpartial-fields
+- -Wredundant-constraints
+
+- -threaded
+- -rtsopts
+- -with-rtsopts=-N

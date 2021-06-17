@@ -8,6 +8,8 @@ module Calls.RoleRequest
        , cmdRoleRequestReq
        ) where
 
+import Relude
+
 import Discord (DiscordHandler, RestCallErrorCode, restCall)
 import Discord.Types
        ( Message (messageAuthor, messageGuild, messageChannel)

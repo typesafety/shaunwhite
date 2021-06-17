@@ -6,6 +6,8 @@ module Auth
        , authAndRunWithMsg
        ) where
 
+import Relude
+
 import Data.Bits ((.&.))
 import Discord (restCall, DiscordHandler, RestCallErrorCode)
 import Discord.Types (Message (..), Guild (..), GuildMember (..), Role (..), User (..))

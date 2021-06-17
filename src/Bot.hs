@@ -2,6 +2,8 @@ module Bot
        ( eventHandler
        ) where
 
+import Relude
+
 import Discord (DiscordHandler)
 import Discord.Types (Event (MessageCreate))
 

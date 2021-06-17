@@ -11,6 +11,8 @@ module Commands
        , stripCommand
        ) where
 
+import Relude
+
 import Discord.Types (Message (..), userIsBot)
 
 import qualified Data.Text as T

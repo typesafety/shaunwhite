@@ -11,6 +11,8 @@ module Env
        , writeConfig
        ) where
 
+import Relude
+
 import Control.Monad.Extra (findM)
 import Data.Aeson (FromJSON, ToJSON, (.:), (.=))
 import Discord (DiscordHandler)
