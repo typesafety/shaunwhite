@@ -11,21 +11,14 @@ extra-source-files:
 - CHANGELOG.md
 
 dependencies:
-# Use Relude in place of the default Prelude from base (see the use of
-# -XNoImplicitPrelude).
+# Prelude dependency
 - base
 - relude
 
 # extra-deps
-- discord-haskell
 
 # Other dependencies
-- aeson
-- containers
-- directory
-- extra
-- filepath
-- text
+- calamity
 
 executables:
   shaunwhite-exe:
@@ -33,6 +26,10 @@ executables:
     source-dirs: app
     dependencies:
     - shaunwhite
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
 
 # The majority of the code resides here, and is only separated from the
 # "executables" to make Haddock generation easier.
@@ -57,7 +54,3 @@ ghc-options:
 - -Wmissing-export-lists
 - -Wpartial-fields
 - -Wredundant-constraints
-
-- -threaded
-- -rtsopts
-- -with-rtsopts=-N
