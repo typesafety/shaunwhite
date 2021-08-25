@@ -15,9 +15,13 @@ dependencies:
 - base
 - relude
 
-# extra-deps
-
 # Other dependencies
+- directory
+- filepath
+- parseargs
+- polysemy
+
+# extra-deps
 - calamity
 
 executables:
@@ -30,6 +34,9 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -O2
+    - -flate-specialise
+    - -fspecialise-aggressively
 
 # The majority of the code resides here, and is only separated from the
 # "executables" to make Haddock generation easier.
@@ -41,8 +48,17 @@ default-extensions:
 # instead.
 - NoImplicitPrelude
 
+- DataKinds
+- FlexibleContexts
+- GADTs
 - LambdaCase
 - OverloadedStrings
+- PolyKinds
+- RankNTypes
+- ScopedTypeVariables
+- TypeApplications
+- TypeOperators
+- TypeFamilies
 
 ghc-options:
 # Warnings
