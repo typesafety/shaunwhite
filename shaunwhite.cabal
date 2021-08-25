@@ -42,7 +42,7 @@ library
       TypeApplications
       TypeOperators
       TypeFamilies
-  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
   build-depends:
       base
     , calamity
@@ -50,6 +50,7 @@ library
     , filepath
     , parseargs
     , polysemy
+    , polysemy-plugin
     , relude
   default-language: Haskell2010
 
@@ -72,7 +73,7 @@ executable shaunwhite-exe
       TypeApplications
       TypeOperators
       TypeFamilies
-  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
+  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
   build-depends:
       base
     , calamity
@@ -80,6 +81,7 @@ executable shaunwhite-exe
     , filepath
     , parseargs
     , polysemy
+    , polysemy-plugin
     , relude
     , shaunwhite
   default-language: Haskell2010

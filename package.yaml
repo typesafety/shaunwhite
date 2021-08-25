@@ -20,6 +20,7 @@ dependencies:
 - filepath
 - parseargs
 - polysemy
+- polysemy-plugin
 
 # extra-deps
 - calamity
@@ -70,3 +71,6 @@ ghc-options:
 - -Wmissing-export-lists
 - -Wpartial-fields
 - -Wredundant-constraints
+
+# Plugin for better Polysemy type inference
+- -fplugin=Polysemy.Plugin
