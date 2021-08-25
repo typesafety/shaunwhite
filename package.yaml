@@ -56,14 +56,15 @@ default-extensions:
 - DataKinds
 - FlexibleContexts
 - GADTs
+- ImportQualifiedPost
 - LambdaCase
 - OverloadedStrings
 - PolyKinds
 - RankNTypes
 - ScopedTypeVariables
 - TypeApplications
-- TypeOperators
 - TypeFamilies
+- TypeOperators
 
 ghc-options:
 # Warnings

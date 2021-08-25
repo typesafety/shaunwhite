@@ -2,23 +2,23 @@ module Main
     ( main
     ) where
 
-import           Relude
+import Relude
 
-import           Calamity
-import           Calamity.Cache.Eff
-import           Calamity.Cache.InMemory
-import           Calamity.Commands
-import           Calamity.Commands.Context
-import           Calamity.Metrics.Eff
-import           Calamity.Metrics.Noop
-import           CalamityCommands.Context
-import           CalamityCommands.ParsePrefix (ParsePrefix)
-import qualified Di
-import           DiPolysemy
-import qualified Polysemy                     as P
-import           System.Console.ParseArgs
+import Calamity
+import Calamity.Cache.Eff
+import Calamity.Cache.InMemory
+import Calamity.Commands
+import Calamity.Commands.Context
+import Calamity.Metrics.Eff
+import Calamity.Metrics.Noop
+import CalamityCommands.Context
+import CalamityCommands.ParsePrefix (ParsePrefix)
+import Di qualified
+import DiPolysemy
+import Polysemy qualified as P
+import System.Console.ParseArgs
 
-import           Utils.Config
+import Utils.Config
 
 
 main :: IO ()

@@ -3,13 +3,17 @@ module Utils.Config (
     getToken,
     ) where
 
-import           Relude
+import Relude
 
-import           Calamity.Types.Token (Token (BotToken))
-import qualified Data.Text       as T
-import           System.Directory     (XdgDirectory (XdgConfig), doesFileExist,
-                                       getXdgDirectory)
-import           System.FilePath      ((<.>), (</>))
+import Calamity.Types.Token (Token (BotToken))
+import Data.Text qualified as T
+import System.Directory (
+    XdgDirectory (XdgConfig),
+    doesFileExist,
+    getXdgDirectory,
+ )
+
+import System.FilePath ((<.>), (</>))
 
 
 data Cfg = Cfg

@@ -34,14 +34,15 @@ library
       DataKinds
       FlexibleContexts
       GADTs
+      ImportQualifiedPost
       LambdaCase
       OverloadedStrings
       PolyKinds
       RankNTypes
       ScopedTypeVariables
       TypeApplications
-      TypeOperators
       TypeFamilies
+      TypeOperators
   ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
   build-depends:
       base
@@ -69,14 +70,15 @@ executable shaunwhite-exe
       DataKinds
       FlexibleContexts
       GADTs
+      ImportQualifiedPost
       LambdaCase
       OverloadedStrings
       PolyKinds
       RankNTypes
       ScopedTypeVariables
       TypeApplications
-      TypeOperators
       TypeFamilies
+      TypeOperators
   ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
   build-depends:
       base
