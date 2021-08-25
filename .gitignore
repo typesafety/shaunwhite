@@ -24,3 +24,5 @@ cabal.project.local~
 
 # The token is secret
 token
+testtoken
+
