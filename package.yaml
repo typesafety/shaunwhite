@@ -16,14 +16,16 @@ dependencies:
 - relude
 
 # Other dependencies
+- calamity
+- calamity-commands
+- di
+- di-polysemy
 - directory
 - filepath
 - parseargs
 - polysemy
 - polysemy-plugin
-
-# extra-deps
-- calamity
+- text
 
 executables:
   shaunwhite-exe:
@@ -42,7 +44,9 @@ executables:
 # The majority of the code resides here, and is only separated from the
 # "executables" to make Haddock generation easier.
 library:
-  source-dirs: lib
+  source-dirs: lib/
+  exposed-modules:
+    Utils.Config
 
 default-extensions:
 # Disable implicit Prelude imports. Import the Relude module(s) explicitly

@@ -4,6 +4,18 @@ module Main
 
 import           Relude
 
+import           Calamity
+import           Calamity.Cache.Eff
+import           Calamity.Cache.InMemory
+import           Calamity.Commands
+import           Calamity.Commands.Context
+import           Calamity.Metrics.Eff
+import           Calamity.Metrics.Noop
+import           CalamityCommands.Context
+import           CalamityCommands.ParsePrefix (ParsePrefix)
+import qualified Di
+import           DiPolysemy
+import qualified Polysemy                     as P
 import           System.Console.ParseArgs
 
 import           Utils.Config
@@ -11,12 +23,41 @@ import           Utils.Config
 
 main :: IO ()
 main = do
+    -- Setup stuff
     args <- getArgs
-    token <- getToken $ getArg args "tokenFp"
+    shauntoken <- getToken $ getArg args "tokenFp"
+    cfg <- loadCfg
 
-    print token
+    interpret shauntoken eventHandlers
+  where
+    interpret tok handlers = Di.new $ \di ->
+        void
+        . P.runFinal
+        . P.embedToFinal @IO
+        . runDiToIO di
+        . runCacheInMemory
+        . runMetricsNoop
+        . useFullContext
+        . useConstantPrefix ">>="
+        . runBotIO tok defaultIntents
+        $ handlers
 
-getArgs ::IO (Args Text)
+eventHandlers ::
+    P.Sem
+        (SetupEff
+            '[ParsePrefix Message,
+            ConstructContext Message FullContext IO (),
+            MetricEff,
+            CacheEff,
+            Di Di.Level Di.Path Di.Message,
+            P.Embed IO,
+            P.Final IO])
+        ()
+eventHandlers = do
+    info @Text "Setting up event handlers..."
+    info @Text "Ready!"
+
+getArgs :: IO (Args Text)
 getArgs = parseArgsIO ArgsComplete argsList
   where
     argsList = [
@@ -28,3 +69,6 @@ getArgs = parseArgsIO ArgsComplete argsList
             argDesc  = "Path to token file."
         }
         ]
+
+loadCfg :: IO Cfg
+loadCfg = pure $ Cfg []  -- TODO: Do something

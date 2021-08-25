@@ -1,14 +1,20 @@
-module Utils.Config
-    ( getToken
+module Utils.Config (
+    Cfg(Cfg),
+    getToken,
     ) where
 
 import           Relude
 
 import           Calamity.Types.Token (Token (BotToken))
+import qualified Data.Text       as T
 import           System.Directory     (XdgDirectory (XdgConfig), doesFileExist,
                                        getXdgDirectory)
 import           System.FilePath      ((<.>), (</>))
 
+
+data Cfg = Cfg
+    { cfgRequestable :: [Text]  -- TODO: replace Text with other type
+    } deriving (Show)
 
 {- | Attempt to locate and read the bot token.
 
@@ -21,11 +27,14 @@ The first token found in one of the following locations is used, in order:
 -}
 getToken :: Maybe FilePath -> IO Token
 getToken (Just explicitFp) = doesFileExist explicitFp >>= \case
-    True  -> BotToken . fromStrict <$> readFileText explicitFp
+    True  -> makeBotToken <$> readFileText explicitFp
     False -> fail $ "Token not found at: `" <> explicitFp <> "`"
 getToken Nothing = do
     cfgDir <- getXdgDirectory XdgConfig configSubdir
     token <- readFile $ cfgDir </> "shaunwhite" <.> "token"
-    pure . BotToken . fromString $ token
+    pure . makeBotToken . fromString $ token
   where
     configSubdir = "shaunwhite"
+
+makeBotToken :: Text -> Token
+makeBotToken = BotToken . toLazy . T.strip

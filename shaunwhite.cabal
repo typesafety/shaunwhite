@@ -28,7 +28,7 @@ library
   other-modules:
       Paths_shaunwhite
   hs-source-dirs:
-      lib
+      lib/
   default-extensions:
       NoImplicitPrelude
       DataKinds
@@ -46,12 +46,16 @@ library
   build-depends:
       base
     , calamity
+    , calamity-commands
+    , di
+    , di-polysemy
     , directory
     , filepath
     , parseargs
     , polysemy
     , polysemy-plugin
     , relude
+    , text
   default-language: Haskell2010
 
 executable shaunwhite-exe
@@ -77,6 +81,9 @@ executable shaunwhite-exe
   build-depends:
       base
     , calamity
+    , calamity-commands
+    , di
+    , di-polysemy
     , directory
     , filepath
     , parseargs
@@ -84,4 +91,5 @@ executable shaunwhite-exe
     , polysemy-plugin
     , relude
     , shaunwhite
+    , text
   default-language: Haskell2010
