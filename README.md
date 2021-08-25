@@ -13,8 +13,11 @@ module Example
     ) where
 
 import Relude        -- For most imports normally provided by Prelude.
-import Relude.Extra  -- Extra stuff provided by Relude
+import Relude.Extra  -- Extra stuff not inlcuded in Relude.
 ```
+
+This bot is built using the [Calamity](https://github.com/simmsb/calamity)
+library.
 
 ## Structure
 
