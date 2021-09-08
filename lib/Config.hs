@@ -1,4 +1,4 @@
-module Utils.Config (
+module Config (
     Cfg(Cfg),
     getToken,
     ) where

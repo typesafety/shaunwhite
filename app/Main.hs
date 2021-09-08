@@ -18,7 +18,7 @@ import DiPolysemy
 import Polysemy qualified as P
 import System.Console.ParseArgs
 
-import Utils.Config
+import Config
 
 
 main :: IO ()
