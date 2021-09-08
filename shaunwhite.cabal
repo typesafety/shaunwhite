@@ -25,8 +25,9 @@ source-repository head
 library
   exposed-modules:
       Config
-  other-modules:
+      Shaunwhite
       Utils
+  other-modules:
       Paths_shaunwhite
   hs-source-dirs:
       lib/

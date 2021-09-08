@@ -47,6 +47,7 @@ library:
   source-dirs: lib/
   exposed-modules:
     - Config
+    - Shaunwhite
     - Utils
 
 default-extensions:
