@@ -4,10 +4,10 @@ module Main
 
 import Relude
 
-import Calamity
+import Calamity qualified as C
 import Calamity.Cache.Eff
 import Calamity.Cache.InMemory
-import Calamity.Commands
+import Calamity.Commands as C
 import Calamity.Commands.Context
 import Calamity.Metrics.Eff
 import Calamity.Metrics.Noop
@@ -26,7 +26,7 @@ main = do
     -- Setup stuff
     args <- getArgs
     shauntoken <- getToken $ getArg args "tokenFp"
-    cfg <- loadCfg
+    _cfg <- loadCfg  -- TODO: Implement config loading when needed
 
     interpret shauntoken eventHandlers
   where
@@ -39,14 +39,14 @@ main = do
         . runMetricsNoop
         . useFullContext
         . useConstantPrefix ">>="
-        . runBotIO tok defaultIntents
+        . C.runBotIO tok C.defaultIntents
         $ handlers
 
 eventHandlers ::
     P.Sem
-        (SetupEff
-            '[ParsePrefix Message,
-            ConstructContext Message FullContext IO (),
+        (C.SetupEff
+            '[ParsePrefix C.Message,
+            ConstructContext C.Message FullContext IO (),
             MetricEff,
             CacheEff,
             Di Di.Level Di.Path Di.Message,
@@ -55,6 +55,16 @@ eventHandlers ::
         ()
 eventHandlers = do
     info @Text "Setting up event handlers..."
+
+    -- Add bot commands
+    void . addCommands $ do
+        -- Show help
+        void helpCommand
+
+        -- Echo back the text following the command name
+        void $ C.command @'[Text] "echo" $ \ctxt txt -> do
+            void $ C.tell ctxt txt
+
     info @Text "Ready!"
 
 getArgs :: IO (Args Text)

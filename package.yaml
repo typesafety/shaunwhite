@@ -46,7 +46,7 @@ executables:
 library:
   source-dirs: lib/
   exposed-modules:
-    Utils.Config
+    - Config
 
 default-extensions:
 # Disable implicit Prelude imports. Import the Relude module(s) explicitly
@@ -58,6 +58,7 @@ default-extensions:
 - GADTs
 - ImportQualifiedPost
 - LambdaCase
+- OverloadedLabels
 - OverloadedStrings
 - PolyKinds
 - RankNTypes
