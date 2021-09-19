@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       Config
+      Rolerequest
       Shaunwhite
       Utils
   other-modules:
@@ -55,6 +56,7 @@ library
     , di-polysemy
     , directory
     , filepath
+    , lens
     , parseargs
     , polysemy
     , polysemy-plugin
@@ -92,6 +94,7 @@ executable shaunwhite-exe
     , di-polysemy
     , directory
     , filepath
+    , lens
     , parseargs
     , polysemy
     , polysemy-plugin

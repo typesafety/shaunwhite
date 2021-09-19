@@ -22,6 +22,7 @@ dependencies:
 - di-polysemy
 - directory
 - filepath
+- lens
 - parseargs
 - polysemy
 - polysemy-plugin
@@ -47,6 +48,7 @@ library:
   source-dirs: lib/
   exposed-modules:
     - Config
+    - Rolerequest
     - Shaunwhite
     - Utils
 

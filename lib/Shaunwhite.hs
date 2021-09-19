@@ -13,12 +13,14 @@ import Calamity.Metrics.Eff
 import Calamity.Metrics.Noop
 import CalamityCommands.Context
 import CalamityCommands.ParsePrefix (ParsePrefix)
+import Control.Lens
 import Di qualified
 import DiPolysemy
 import Polysemy qualified as P
 import System.Console.ParseArgs
 
 import Config
+import Rolerequest (rolerequest)
 
 
 runShaunwhite :: IO ()
@@ -64,6 +66,9 @@ eventHandlers = do
         -- Echo back the text following the command name
         void $ C.command @'[Text] "echo" $ \ctxt txt -> do
             void $ C.tell ctxt txt
+
+        -- Give the requested role to the user who issued the command.
+        void $ C.command @'[Text] "rolerequest" rolerequest
 
     info @Text "Ready!"
 
