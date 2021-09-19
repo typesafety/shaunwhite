@@ -67,8 +67,6 @@ library
 
 executable shaunwhite-exe
   main-is: Main.hs
-  other-modules:
-      Paths_shaunwhite
   hs-source-dirs:
       app
   default-extensions:

@@ -42,6 +42,12 @@ executables:
     - -flate-specialise
     - -fspecialise-aggressively
 
+    # To stop a warning caused by a hpack issue:
+    # https://github.com/commercialhaskell/stack/issues/5439
+    when:
+    - condition: false
+      other-modules: Paths_shaunwhite
+
 # The majority of the code resides here, and is only separated from the
 # "executables" to make Haddock generation easier.
 library:
