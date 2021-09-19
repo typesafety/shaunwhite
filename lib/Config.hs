@@ -1,5 +1,5 @@
 module Config (
-    Cfg(Cfg),
+    Cfg (Cfg),
     getToken,
     ) where
 
@@ -12,7 +12,6 @@ import System.Directory (
     doesFileExist,
     getXdgDirectory,
  )
-
 import System.FilePath ((<.>), (</>))
 
 
@@ -27,7 +26,6 @@ The first token found in one of the following locations is used, in order:
 1. `--token` command line parameter. If the provided file does not exist, the program
     will exit.
 2. $XDG_CONFIG_HOME/shaunwhite/shaunwhite.token
-
 -}
 getToken :: Maybe FilePath -> IO Token
 getToken (Just explicitFp) = doesFileExist explicitFp >>= \case

@@ -1,5 +1,5 @@
-module Main
-    ( main
+module Main (
+    main,
     ) where
 
 import Relude (IO)

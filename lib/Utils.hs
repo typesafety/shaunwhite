@@ -2,9 +2,9 @@ module Utils (
     todo,
     ) where
 
-import GHC.Base (undefined)
+import Relude
 
 
 {-# WARNING todo "Unhandled TODO placeholder expression." #-}
 todo :: a
-todo = undefined
+todo = error "ERROR: TODO IN CODE"
