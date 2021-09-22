@@ -38,6 +38,9 @@ type SetupEffects =
         , P.Final IO
         ]
 
+-- | Effects for additional stuff we want.
+type ShaunwhiteEffects = '[State Env]
+
 -- | Main entry point.
 runShaunwhite :: IO ()
 runShaunwhite = do
@@ -49,7 +52,7 @@ runShaunwhite = do
 
     interpret shauntoken env eventHandlers
   where
-    interpret :: C.Token -> Env -> P.Sem (State Env ': SetupEffects) r -> IO ()
+    interpret :: C.Token -> Env -> P.Sem (ShaunwhiteEffects ++ SetupEffects) r -> IO ()
     interpret tok initialEnv handlers = Di.new $ \di ->
         void
         -- Handle all the boilerplate effects
@@ -66,7 +69,7 @@ runShaunwhite = do
         . runState initialEnv
         $ handlers
 
-eventHandlers :: P.Sem (State Env ': SetupEffects) ()
+eventHandlers :: P.Sem (ShaunwhiteEffects ++ SetupEffects) ()
 eventHandlers = do
     info @Text "Setting up event handlers..."
 
