@@ -28,7 +28,6 @@ library
       Config
       Rolerequest
       Shaunwhite
-      Utils
   other-modules:
       Paths_shaunwhite
   hs-source-dirs:
