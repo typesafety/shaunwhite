@@ -1,34 +1,50 @@
 # shaunwhite
 
-Check `package.yaml` for language extensions enabled by default. Notably,
-`-XNoImplicitPrelude` is enabled to use
-[Relude](https://github.com/kowainik/relude) instead.
+This bot uses simmsb's [Calamity](https://github.com/simmsb/calamity) library.
 
-This means that that the `Relude` module(s) must be explicitly imported.
-As an example, the imports at the top of a module could look like this:
+## Custom prelude
+
+The `src/CustomPrelude.hs` module implements the custom prelude used in the
+project and consists of minor additions/changes to Kowainik's
+[Relude](https://github.com/kowainik/relude) package.
+
+The `-XNoImplicitPrelude` extension is enabled by default to avoid importing
+the default Haskell prelude. Explicitly import the custom prelude for each
+module instead:
 
 ```haskell
 module Example
     ( ...
     ) where
 
-import Relude        -- For most imports normally provided by Prelude.
-import Relude.Extra  -- Extra stuff not inlcuded in Relude.
+import CustomPrelude
 ```
 
-This bot is built using the [Calamity](https://github.com/simmsb/calamity)
-library.
+Relude provides the `Relude.Extra` module which contains some extra stuff that
+can be imported in addition to `CustomPrelude`, if so desired.
+
+## Language extensions
+
+Check `package.yaml` for language extensions enabled by default.
 
 ## Structure
 
 The package provides an executable in the `app` directory, and a library in the
-`lib` directory (which holds the majority of the code). The only purpose of this
-is to make Haddock documentation easier.
+`lib` directory (which holds the entirety of the code). The only purpose of
+this is to make Haddock documentation easier.
 
 # Building
 
 `shaunwhite` is built with [Stack](https://www.haskellstack.org).
 
+Build the bot:
+
 ```sh
 stack build
+```
+
+Run the bot:
+
+```sh
+stack run -- --token path/to/bot/token
 ```
