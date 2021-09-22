@@ -2,7 +2,7 @@ module Shaunwhite (
     runShaunwhite,
     ) where
 
-import Relude
+import CustomPrelude
 
 import Calamity qualified as C
 import Calamity.Cache.Eff (CacheEff)

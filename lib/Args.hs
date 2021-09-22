@@ -2,7 +2,7 @@ module Args (
     readArgsIO,
     ) where
 
-import Relude
+import CustomPrelude
 
 import System.Console.ParseArgs
 

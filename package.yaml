@@ -55,6 +55,7 @@ library:
   exposed-modules:
     - Args
     - Config
+    - CustomPrelude
     - Rolerequest
     - Shaunwhite
 

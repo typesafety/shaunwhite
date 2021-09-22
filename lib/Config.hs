@@ -3,7 +3,7 @@ module Config (
     getToken,
     ) where
 
-import Relude
+import CustomPrelude
 
 import Calamity.Types.Token (Token (BotToken))
 import Data.Text qualified as T
