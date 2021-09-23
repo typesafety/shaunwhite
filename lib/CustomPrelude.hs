@@ -8,8 +8,7 @@ module CustomPrelude (
 
 import Relude as ReludeLess hiding (
     -- Hide MTL stuff that is replaced by Polysemy equivalents
-    State,
-    runState
+    State, runState, evalState, execState, get, put, state,
     )
 
 

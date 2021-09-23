@@ -15,6 +15,7 @@ module Config (
 import CustomPrelude
 
 import Calamity.Types.Token (Token (BotToken))
+import Control.Exception (IOException, throwIO, try)
 import Control.Lens.TH (makeLenses)
 import Data.Aeson
   ( FromJSON,
@@ -35,6 +36,7 @@ import System.Directory
     getXdgDirectory,
   )
 import System.FilePath ((<.>), (</>))
+import System.IO.Error (ioError, userError)
 
 
 -- | Persistent data to be read into the runtime environment at bot startup.
@@ -63,8 +65,13 @@ following options to be attempted):
 readCfgFile :: IO Cfg
 readCfgFile = do
     cfgDir <- getCfgDir
-    Just cfgJson <- decodeFileStrict' $ cfgDir </> "config" <.> "json"
-    pure cfgJson
+    -- TODO: more granular exception handling
+    readRes <- try @IOException $ decodeFileStrict' $ cfgDir </> "config" <.> "json"
+    case readRes of
+        Left exc     -> throwIO exc
+        Right mbyCfg -> case mbyCfg of
+            Nothing -> ioError $ userError "Failed to parse configuration file"
+            Just cfg -> pure cfg
 
 {- | Attempt to locate and read the bot token.
 

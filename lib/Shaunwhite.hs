@@ -13,6 +13,7 @@ import Calamity.Metrics.Eff (MetricEff)
 import Calamity.Metrics.Noop (runMetricsNoop)
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
+import Control.Exception (try)
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
@@ -21,7 +22,7 @@ import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
 import Config (readCfgFile, readTokenFile)
-import Env (Env (..))
+import Env (Env (..), envFromCfg)
 import Rolerequest (rolerequest)
 
 
@@ -49,10 +50,11 @@ runShaunwhite = do
     -- TODO: Look into using polysemy for these IO actions as well. Might
     --       want to use a Reader with the command line arguments for example,
     --       if they are to be used elsewhere in the program.
+    --       Use proper Di logging.
     args <- readArgsIO
     shauntoken <- readTokenFile $ getArg args "tokenFp"
-    _cfg <- readCfgFile
-    env <- loadEnv  -- TODO: Load environment from configuration
+    env <- initEnv
+    putTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
 
     interpret shauntoken env eventHandlers
   where
@@ -73,6 +75,19 @@ runShaunwhite = do
         . runState initialEnv
         $ handlers
 
+    -- Initialize the starting environment using a config file if successful,
+    -- using a default environment otherwise.
+    initEnv :: IO Env
+    initEnv = try @SomeException readCfgFile <&> \case
+        Right cfg -> envFromCfg cfg
+        Left _    -> defaultEnv
+      where
+        defaultEnv :: Env
+        defaultEnv = Env
+            { _envAvailRoles = []
+            }
+
+
 eventHandlers :: P.Sem (ShaunwhiteEffects ++ SetupEffects) ()
 eventHandlers = do
     info @Text "Setting up event handlers..."
@@ -90,19 +105,3 @@ eventHandlers = do
         void $ C.command @'[Text] "rolerequest" rolerequest
 
     info @Text "Ready!"
-
--- TODO: Implement this for real and move into Env module.
---       Should probably have signature Cfg -> Env.
-loadEnv :: IO Env
-loadEnv = pure defaultEnv  -- TODO: read from config instead
-  where
-    defaultEnv :: Env
-    defaultEnv = Env
-        { _envAvailRoles =
-            [ "DV2016"
-            , "DV2017"
-            , "DV2018"
-            , "DV2019"
-            , "DV2020"
-            ]
-        }
