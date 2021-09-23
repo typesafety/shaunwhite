@@ -17,6 +17,10 @@ import Polysemy.State qualified as S
 import Config (Env, envAvailRoles)
 
 
+{- | Give the user issuing the bot command the role with the corresponding name.
+The request is only granted if the role is in the explicit list of requestable
+roles.
+-}
 rolerequest :: forall r . (C.BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> P.Sem r ()
 rolerequest ctxt roleTxt = do
@@ -24,11 +28,9 @@ rolerequest ctxt roleTxt = do
     Right roles <- C.invoke (C.GetGuildRoles guild)
     Just role <- pure $ roleFromName roleTxt roles
 
-    -- TODO: Better code style
     available <- S.gets (view envAvailRoles)
-    when (view #name role `elem` available) $ do
-        let guildReq = C.AddGuildMemberRole guild (ctxt ^. #user) role
-        void . C.invoke $ guildReq
+    when (view #name role `elem` available)
+        $ void . C.invoke $ C.AddGuildMemberRole guild (ctxt ^. #user) role
   where
     roleFromName :: Text -> [Role] -> Maybe Role
     roleFromName name = find ((== name) . toStrict . view #name)
