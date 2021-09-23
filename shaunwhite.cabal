@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       Args
+      Env
       Config
       CustomPrelude
       Rolerequest
@@ -50,7 +51,8 @@ library
       TypeOperators
   ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
   build-depends:
-      base
+      aeson
+    , base
     , calamity
     , calamity-commands
     , di
@@ -86,7 +88,8 @@ executable shaunwhite-exe
       TypeOperators
   ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
   build-depends:
-      base
+      aeson
+    , base
     , calamity
     , calamity-commands
     , di

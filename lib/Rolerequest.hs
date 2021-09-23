@@ -14,7 +14,7 @@ import Polysemy.Fail (Fail)
 import Polysemy.State (State)
 import Polysemy.State qualified as S
 
-import Config (Env, envAvailRoles)
+import Env (Env, envAvailRoles)
 
 
 {- | Give the user issuing the bot command the role with the corresponding name.

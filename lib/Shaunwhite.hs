@@ -20,7 +20,8 @@ import Polysemy.State (State, runState)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
-import Config (Cfg (..), Env (..), getToken)
+import Config (readCfgFile, readTokenFile)
+import Env (Env (..))
 import Rolerequest (rolerequest)
 
 
@@ -45,9 +46,12 @@ type ShaunwhiteEffects = '[State Env]
 runShaunwhite :: IO ()
 runShaunwhite = do
     -- Setup stuff
+    -- TODO: Look into using polysemy for these IO actions as well. Might
+    --       want to use a Reader with the command line arguments for example,
+    --       if they are to be used elsewhere in the program.
     args <- readArgsIO
-    shauntoken <- getToken $ getArg args "tokenFp"
-    _cfg <- loadCfg  -- TODO: Implement config loading when needed
+    shauntoken <- readTokenFile $ getArg args "tokenFp"
+    _cfg <- readCfgFile
     env <- loadEnv  -- TODO: Load environment from configuration
 
     interpret shauntoken env eventHandlers
@@ -87,11 +91,8 @@ eventHandlers = do
 
     info @Text "Ready!"
 
--- TODO: Move these elsewhere once implemented
-
-loadCfg :: IO Cfg
-loadCfg = pure $ Cfg []  -- TODO: Do something
-
+-- TODO: Implement this for real and move into Env module.
+--       Should probably have signature Cfg -> Env.
 loadEnv :: IO Env
 loadEnv = pure defaultEnv  -- TODO: read from config instead
   where

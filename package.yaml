@@ -16,6 +16,7 @@ dependencies:
 - relude
 
 # Other dependencies
+- aeson
 - calamity
 - calamity-commands
 - di
@@ -54,6 +55,7 @@ library:
   source-dirs: lib/
   exposed-modules:
     - Args
+    - Env
     - Config
     - CustomPrelude
     - Rolerequest
