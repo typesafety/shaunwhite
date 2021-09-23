@@ -25,9 +25,9 @@ source-repository head
 library
   exposed-modules:
       Args
-      Env
       Config
       CustomPrelude
+      Env
       Rolerequest
       Shaunwhite
   other-modules:
@@ -49,7 +49,7 @@ library
       TypeApplications
       TypeFamilies
       TypeOperators
-  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
   build-depends:
       aeson
     , base
@@ -86,7 +86,7 @@ executable shaunwhite-exe
       TypeApplications
       TypeFamilies
       TypeOperators
-  ghc-options: -Wall -Wcompat -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
   build-depends:
       aeson
     , base
