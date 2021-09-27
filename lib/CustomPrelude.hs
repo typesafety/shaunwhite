@@ -7,8 +7,9 @@ module CustomPrelude (
     ) where
 
 import Relude as ReludeLess hiding (
-    -- Hide MTL stuff that is replaced by Polysemy equivalents
+    -- Hide RWS stuff that is replaced by Polysemy equivalents
     State, runState, evalState, execState, get, put, state,
+    Reader, runReader, ask, asks, local, reader, withReader,
     )
 
 
