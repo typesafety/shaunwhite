@@ -21,9 +21,10 @@ import Polysemy.Reader (Reader, runReader)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
+import Auth (addCheckedCommands, checkCmd, checkRegularCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
-import Rolerequest (rolerequest)
+import Rolerequest (makeRequestable, rolerequest)
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:
@@ -93,15 +94,21 @@ eventHandlers = do
     info @Text "Setting up event handlers..."
 
     -- Add bot commands
-    void . C.addCommands $ do
+    -- TODO: Implement some proper wrapping system for registering commands.
+    void $ addCheckedCommands
         -- Show help
-        void C.helpCommand
+        [ checkRegularCmd C.helpCommand
 
         -- Echo back the text following the command name
-        void . C.command @'[Text] "echo" $ \ctxt txt -> do
+        , checkRegularCmd $ C.command @'[Text] "echo" $ \ctxt txt -> do
             void $ C.tell ctxt txt
 
         -- Give the requested role to the user who issued the command.
-        void $ C.command @'[Text] "rolerequest" rolerequest
+        , checkRegularCmd $ C.command @'[Text] "rolerequest" rolerequest
+
+        -- Make a role requestable.
+        , checkCmd $ C.command @'[Text] "makeRequestable" makeRequestable
+        ]
 
     info @Text "Ready!"
+

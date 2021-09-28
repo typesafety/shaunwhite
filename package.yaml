@@ -19,6 +19,7 @@ dependencies:
 - aeson
 - calamity
 - calamity-commands
+- data-flags
 - di
 - di-polysemy
 - directory
@@ -55,6 +56,7 @@ library:
   source-dirs: lib/
   exposed-modules:
     - Args
+    - Auth
     - Config
     - CustomPrelude
     - Env

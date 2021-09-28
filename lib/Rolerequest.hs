@@ -1,4 +1,5 @@
 module Rolerequest (
+    makeRequestable,
     rolerequest,
     ) where
 
@@ -34,3 +35,12 @@ rolerequest ctxt roleTxt = do
   where
     roleFromName :: Text -> [Role] -> Maybe Role
     roleFromName name = find ((== name) . toStrict . view #name)
+
+{- | Make the given role requestable with 'rolerequest'. This command does
+nothing if the issuer is not an admin of the server.
+-}
+makeRequestable :: forall r . (Members '[Fail, Reader Env] r)
+    => FullContext -> Text -> P.Sem r ()
+makeRequestable ctxt roleTxt = do
+    todo
+
