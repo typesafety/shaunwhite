@@ -21,7 +21,7 @@ import Polysemy.Reader (Reader, runReader)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
-import Auth (addCheckedCommands, checkCmd, checkRegularCmd)
+import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
 import Rolerequest (makeRequestable, rolerequest)
@@ -93,22 +93,25 @@ eventHandlers :: P.Sem (ShaunwhiteEffects ++ SetupEffects) ()
 eventHandlers = do
     info @Text "Setting up event handlers..."
 
-    -- Add bot commands
-    -- TODO: Implement some proper wrapping system for registering commands.
-    void $ addCheckedCommands
+    {- TODO: Implement some proper wrapping system for registering commands to
+    lessen the risk of accidentally allowing anyone to issue admin commands.
+    -}
+    -- Register bot commands.
+    void $ C.addCommands $ do
         -- Show help
-        [ checkRegularCmd C.helpCommand
+        void C.helpCommand
 
         -- Echo back the text following the command name
-        , checkRegularCmd $ C.command @'[Text] "echo" $ \ctxt txt -> do
-            void $ C.tell ctxt txt
+        void $
+            C.command @'[Text] "echo" $ \ctxt txt -> do
+                void $ C.tell ctxt txt
 
         -- Give the requested role to the user who issued the command.
-        , checkRegularCmd $ C.command @'[Text] "rolerequest" rolerequest
+        void $
+            C.command @'[Text] "rolerequest" rolerequest
 
         -- Make a role requestable.
-        , checkCmd $ C.command @'[Text] "makeRequestable" makeRequestable
-        ]
+        registerAdminCmd $
+            C.command @'[Text] "makeRequestable" makeRequestable
 
     info @Text "Ready!"
-

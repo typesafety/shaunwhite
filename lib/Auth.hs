@@ -1,60 +1,32 @@
 module Auth (
-    Checked (),
-    addCheckedCommands,
-    checkCmd,
-    checkRegularCmd,
     checkIsAdmin,
+    registerAdminCmd,
     ) where
 
 import CustomPrelude
 
 import Calamity qualified as C
-import Calamity.Commands (addCommands)
 import Calamity.Commands.Context (FullContext)
 import Calamity.Commands.Dsl (requires)
 import Calamity.Commands.Types
   ( Check,
     Command,
-    CommandContext,
-    CommandHandler,
     DSLState,
   )
 import CalamityCommands.Check (buildCheck)
-import CalamityCommands.Context (ConstructContext)
-import CalamityCommands.ParsePrefix (ParsePrefix)
 import Control.Lens
 import Data.Flags (containsAll)
 import Data.Text.Lazy qualified as L
-import Polysemy (Members, Sem)
+import Polysemy (Sem)
 
-
--- | Abstract class whose constructor should not be exported.
-newtype Checked a = Checked a
 
 -- | Register a command that requires an admin to issue it.
-checkCmd :: (C.BotC r, FullContext ~ c) =>
+registerAdminCmd :: (C.BotC r, FullContext ~ c) =>
     Sem (DSLState c r) (Command c) ->
-    Checked (Sem (DSLState c r) (Command c))
-checkCmd cmd = Checked $ do
+    Sem (DSLState c r) ()
+registerAdminCmd cmd = do
     adminCheck <- checkIsAdmin
-    requires [adminCheck] cmd
-
--- | Register a command that can be issued by anyone.
-checkRegularCmd ::
-    Sem (DSLState c r) (Command c) ->
-    Checked (Sem (DSLState c r) (Command c))
-checkRegularCmd = Checked . requires []
-
--- | Wrapper around addCommands for registering Checked commands.
-addCheckedCommands ::
-    ( C.BotC r
-    , Typeable c
-    , CommandContext c
-    , Members '[ParsePrefix C.Message, ConstructContext C.Message c IO ()] r
-    ) =>
-    [Checked (Sem (DSLState c r) a)] ->
-    Sem r (Sem r (), CommandHandler c, ())
-addCheckedCommands cs = addCommands $ mapM_ (\(Checked c) -> c) cs
+    void $ requires [adminCheck] cmd
 
 {- | Construct a Check for a command, requiring that the user issuing the
 command is an admin of the server.
