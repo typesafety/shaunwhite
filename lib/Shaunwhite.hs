@@ -17,7 +17,7 @@ import Control.Exception (try)
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
-import Polysemy.Reader (Reader, runReader)
+import Polysemy.State (State, runState)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
@@ -42,14 +42,14 @@ type SetupEffects =
         ]
 
 -- | Effects for additional stuff we want.
-type ShaunwhiteEffects = '[Reader Env]
+type ShaunwhiteEffects = '[State Env]
 
 -- | Main entry point.
 runShaunwhite :: IO ()
 runShaunwhite = do
     -- Setup stuff
     -- TODO: Look into using polysemy for these IO actions as well. Might
-    --       want to use a Reader with the command line arguments for example,
+    --       want to use a State with the command line arguments for example,
     --       if they are to be used elsewhere in the program.
     --       Use proper Di logging.
     args <- readArgsIO
@@ -73,7 +73,7 @@ runShaunwhite = do
         . C.runBotIO tok C.defaultIntents
 
         -- Handle additional effects we've added
-        . runReader initialEnv
+        . runState initialEnv
         $ handlers
 
     -- Initialize the starting environment using a config file if successful,
