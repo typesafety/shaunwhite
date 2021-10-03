@@ -13,30 +13,28 @@ import DiPolysemy (info, warning)
 import Polysemy (Member, Members)
 import Polysemy qualified as P
 import Polysemy.Fail (Fail)
-import Polysemy.Reader (Reader)
-import Polysemy.Reader qualified as R
+import Polysemy.State (State)
+import Polysemy.State qualified as S
 
-import Env (Roe, envAvailRoles, roeEnv)
+import Env (Env, envAvailRoles)
 
 
 {- | Give the user issuing the bot command the role with the corresponding name.
 The request is only granted if the role is in the explicit list of requestable
 roles.
 -}
-rolerequest :: forall r . (BotC r, Members '[Fail, Reader Roe] r)
+rolerequest :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> P.Sem r ()
 rolerequest ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
     Just role <- lookupRole guild roleName
 
-    -- available <- R.asks . view $ roeEnv
-    envI <- R.asks (view roeEnv)
-    available <- view envAvailRoles <$> liftIO (readIORef envI)
+    available <- S.gets (view envAvailRoles)
     when (view #name role `elem` available)
         $ void . C.invoke $ C.AddGuildMemberRole guild (ctxt ^. #user) role
 
 -- | Make the given role requestable with 'rolerequest'.
-makeRequestable :: forall r . (BotC r, Members '[Fail, Reader Roe] r)
+makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> P.Sem r ()
 makeRequestable ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
@@ -44,10 +42,8 @@ makeRequestable ctxt roleName = do
         Nothing -> warning @Text $
             "Tried making non-existing role requestable: " <> roleName
         Just _role -> do
-            envI <- R.asks (view roeEnv)
-            modifyIORef' envI (over envAvailRoles (toLazy roleName :))
-            available <- view envAvailRoles <$> liftIO (readIORef envI)
-
+            S.modify' (over envAvailRoles (toLazy roleName :))
+            available <- S.gets (view envAvailRoles)
             info @Text $ "Made role `" <> roleName <> "` requestable"
             info @Text $ "Requestable roles are now: " <> show available
 

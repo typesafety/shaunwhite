@@ -15,19 +15,17 @@ import Calamity.Metrics.Noop (runMetricsNoop)
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
 import Control.Exception (try)
-import Control.Lens
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
-import Polysemy.Reader (Reader, runReader)
+import Polysemy.State (State, runStateIORef)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
 import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
-import Env (Env (..), Roe (..), envFromCfg, roeEnv)
+import Env (Env (..), envFromCfg)
 import Rolerequest (makeRequestable, rolerequest)
-
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:
@@ -45,27 +43,26 @@ type SetupEffects =
         ]
 
 -- | Effects for additional stuff we want.
-type ShaunwhiteEffects = '[Reader Roe]
+type ShaunwhiteEffects = '[State Env]
 
 -- | Main entry point.
 runShaunwhite :: IO ()
 runShaunwhite = do
     -- Setup stuff
-    -- TODO: Look into using polysemy for these IO actions as well. Might
-    --       want to use a State with the command line arguments for example,
-    --       if they are to be used elsewhere in the program.
-    --       Use proper Di logging.
+    -- TODO: Look into using proper effects for these IO actions as well.
+    -- TODO: Look into using Di for this logging as well.
+    -- TODO: Carry command-line arguments in a RO state.
     args <- readArgsIO
     shauntoken <- readTokenFile $ getArg args "tokenFp"
-    roe <- initRoe
+    envI <- initEnv
+    env <- readIORef envI
 
-    env <- readIORef $ view roeEnv roe
     putTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
 
-    interpret shauntoken roe eventHandlers
+    interpret shauntoken envI eventHandlers
   where
-    interpret :: C.Token -> Roe -> P.Sem (ShaunwhiteEffects ++ SetupEffects) r -> IO ()
-    interpret tok initialROE handlers = Di.new $ \di ->
+    interpret :: C.Token -> IORef Env -> P.Sem (ShaunwhiteEffects ++ SetupEffects) r -> IO ()
+    interpret tok envI handlers = Di.new $ \di ->
         void
         -- Handle all the boilerplate effects
         . P.runFinal
@@ -78,20 +75,17 @@ runShaunwhite = do
         . C.runBotIO tok C.defaultIntents
 
         -- Handle additional effects we've added
-        . runReader initialROE
+        . runStateIORef envI
         $ handlers
 
     -- Initialize the starting environment using a config file if successful,
     -- using a default environment otherwise.
-    initRoe :: IO Roe
-    initRoe = do
+    initEnv :: IO (IORef Env)
+    initEnv = do
         env <- try @SomeException readCfgFile <&> \case
             Right cfg -> envFromCfg cfg
             Left _    -> defaultEnv
-        envIor <- newIORef env
-        pure $ Roe
-            { _roeEnv = envIor
-            }
+        newIORef env
       where
         defaultEnv :: Env
         defaultEnv = Env
