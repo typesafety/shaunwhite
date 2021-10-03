@@ -9,13 +9,12 @@ module CustomPrelude (
     module Debug.Pretty.Simple
     ) where
 
+import Debug.Pretty.Simple
 import Relude as ReludeLess hiding (
     -- Hide RWS stuff that is replaced by Polysemy equivalents
-    State, runState, evalState, execState, get, put, state,
+    State, runState, evalState, execState, get, put, modify, modify', state,
     Reader, runReader, ask, asks, local, reader, withReader,
     )
-
-import Debug.Pretty.Simple
 
 
 {-# WARNING todo "Unhandled TODO placeholder expression." #-}

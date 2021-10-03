@@ -19,6 +19,7 @@ dependencies:
 - aeson
 - calamity
 - calamity-commands
+- containers
 - data-flags
 - di
 - di-polysemy

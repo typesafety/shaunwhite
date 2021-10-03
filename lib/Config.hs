@@ -41,17 +41,17 @@ import System.IO.Error (ioError, userError)
 
 -- | Persistent data to be read into the runtime environment at bot startup.
 data Cfg = Cfg
-    { _cfgAvailRoles :: [L.Text]
+    { _cfgAvailRoles :: Set L.Text
     } deriving (Show)
 $(makeLenses ''Cfg)
 
 instance FromJSON Cfg where
     parseJSON = withObject "Cfg" $ \v -> Cfg
-        <$> v .: "requestable_roles"
+        . fromList <$> v .: "requestable_roles"
 
 instance ToJSON Cfg where
     toJSON (Cfg availRoles) =
-        object ["requestable_roles" .= availRoles]
+        object ["requestable_roles" .= toList availRoles]
 
 {- | Attempt to read a Cfg from file. Expects a JSON format, and raises an
 exception if encountering issues, e.g. file not found or in the wrong format.

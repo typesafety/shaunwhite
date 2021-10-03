@@ -89,7 +89,7 @@ runShaunwhite = do
       where
         defaultEnv :: Env
         defaultEnv = Env
-            { _envAvailRoles = []
+            { _envRequestableRoles = mempty
             }
 
 

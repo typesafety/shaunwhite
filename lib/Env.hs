@@ -3,7 +3,7 @@
 module Env (
     -- * The program state while running
     Env (..),
-    envAvailRoles,
+    envRequestableRoles,
 
     envFromCfg,
     ) where
@@ -18,7 +18,7 @@ import Config (Cfg, cfgAvailRoles)
 
 -- | Contains necessary state for the program while running.
 data Env = Env
-    { _envAvailRoles :: [L.Text]
+    { _envRequestableRoles :: Set L.Text
     -- ^ Names of roles that can be requested.
     -- TODO: possibly use some other means of identification of roles, such
     --       as the role ID (:: Snowflake Role).
@@ -27,5 +27,5 @@ $(makeLenses ''Env)
 
 envFromCfg :: Cfg -> Env
 envFromCfg cfg = Env
-    { _envAvailRoles = cfg ^. cfgAvailRoles
+    { _envRequestableRoles = cfg ^. cfgAvailRoles
     }
