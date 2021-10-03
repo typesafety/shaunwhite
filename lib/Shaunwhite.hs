@@ -25,7 +25,7 @@ import Args (readArgsIO)
 import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
-import Rolerequest (makeRequestable, rolerequest)
+import Rolerequest (makeRequestable, rolerequest, revokeRequestable)
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:
@@ -114,5 +114,9 @@ eventHandlers = do
 
         -- Make a role requestable. This command requires admin.
         registerAdminCmd $ hide $ C.command @'[Text] "makeRequestable" makeRequestable
+
+        -- Revoke requestable status from a role. This command requires admin.
+        registerAdminCmd . hide . C.command @'[Text] "revokeRequestable"
+            $ \_ roleName ->  revokeRequestable roleName
 
     info @Text "Ready!"

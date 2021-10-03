@@ -24,10 +24,10 @@ import Polysemy.Fail (Fail, runFail)
 -- | Register a command that requires an admin to issue it.
 registerAdminCmd :: (C.BotC r, FullContext ~ c) =>
     Sem (DSLState c r) (Command c) ->
-    Sem (DSLState c r) (Command c)
+    Sem (DSLState c r) ()
 registerAdminCmd cmd = do
     adminCheck <- checkIsAdmin
-    requires [adminCheck] cmd
+    void $ requires [adminCheck] cmd
 
 {- | Construct a Check for a command, requiring that the user issuing the
 command is an admin of the server.

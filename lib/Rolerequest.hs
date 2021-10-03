@@ -60,7 +60,9 @@ revokeRequestable roleName = do
     if toLazy roleName `Set.member` available
         then do
             S.modify' $ over envRequestableRoles (Set.delete $ toLazy roleName)
+            availableAfter <- S.gets (view envRequestableRoles)
             info @Text $ "Removed `" <> roleName <> "` from requestable roles"
+            info @Text $ "Requestable roles are now: " <> show availableAfter
         else warning @Text $ "Tried to revoke already non-requestable role: " <> roleName
 
 --
