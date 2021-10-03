@@ -5,11 +5,12 @@ module Rolerequest (
 
 import CustomPrelude
 
-import Calamity (Role)
+import Calamity (BotC, Guild, Role)
 import Calamity qualified as C
 import Calamity.Commands.Context (FullContext)
 import Control.Lens
-import Polysemy (Members)
+import DiPolysemy (info, warning)
+import Polysemy (Member, Members)
 import Polysemy qualified as P
 import Polysemy.Fail (Fail)
 import Polysemy.State (State)
@@ -22,25 +23,36 @@ import Env (Env, envAvailRoles)
 The request is only granted if the role is in the explicit list of requestable
 roles.
 -}
-rolerequest :: forall r . (C.BotC r, Members '[Fail, State Env] r)
+rolerequest :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> P.Sem r ()
-rolerequest ctxt roleTxt = do
+rolerequest ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
-    Right roles <- C.invoke (C.GetGuildRoles guild)
-    Just role <- pure $ roleFromName roleTxt roles
+    Just role <- lookupRole guild roleName
 
     available <- S.gets . view $ envAvailRoles
     when (view #name role `elem` available)
         $ void . C.invoke $ C.AddGuildMemberRole guild (ctxt ^. #user) role
+
+-- | Make the given role requestable with 'rolerequest'.
+makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
+    => FullContext -> Text -> P.Sem r ()
+makeRequestable ctxt roleName = do
+    Just guild <- pure . view #guild $ ctxt
+    lookupRole guild roleName >>= \case
+        Nothing -> warning @Text $
+            "Tried making non-existing role requestable: " <> roleName
+        Just _role -> do
+            S.modify' $ over envAvailRoles (toLazy roleName :)
+            available <- S.gets . view $ envAvailRoles
+            info @Text $ "Made role `" <> roleName <> "` requestable"
+            info @Text $ "Requestable roles are now: " <> show available
+
+-- | Return the role of the given name if it exists in the guild, or Nothing otherwise.
+lookupRole :: (BotC r, Member Fail r) => Guild -> Text -> P.Sem r (Maybe Role)
+lookupRole guild roleName = do
+    Right roles <- C.invoke (C.GetGuildRoles guild)
+    pure $ roleFromName roleName roles
   where
     roleFromName :: Text -> [Role] -> Maybe Role
     roleFromName name = find ((== name) . toStrict . view #name)
-
-{- | Make the given role requestable with 'rolerequest'. This command does
-nothing if the issuer is not an admin of the server.
--}
-makeRequestable :: forall r . (Members '[Fail, State Env] r)
-    => FullContext -> Text -> P.Sem r ()
-makeRequestable ctxt roleTxt = do
-    todo
 

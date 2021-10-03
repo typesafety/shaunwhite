@@ -9,6 +9,7 @@ import Calamity.Cache.Eff (CacheEff)
 import Calamity.Cache.InMemory (runCacheInMemory)
 import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext, useFullContext)
+import Calamity.Commands.Dsl (hide)
 import Calamity.Metrics.Eff (MetricEff)
 import Calamity.Metrics.Noop (runMetricsNoop)
 import CalamityCommands.Context (ConstructContext)
@@ -102,16 +103,13 @@ eventHandlers = do
         void C.helpCommand
 
         -- Echo back the text following the command name
-        void $
-            C.command @'[Text] "echo" $ \ctxt txt -> do
-                void $ C.tell ctxt txt
+        void $ C.command @'[Text] "echo" $ \ctxt txt -> do
+            void $ C.tell ctxt txt
 
         -- Give the requested role to the user who issued the command.
-        void $
-            C.command @'[Text] "rolerequest" rolerequest
+        void $ C.command @'[Text] "rolerequest" rolerequest
 
-        -- Make a role requestable.
-        registerAdminCmd $
-            C.command @'[Text] "makeRequestable" makeRequestable
+        -- Make a role requestable. This command requires admin.
+        registerAdminCmd $ hide $ C.command @'[Text] "makeRequestable" makeRequestable
 
     info @Text "Ready!"
