@@ -1,4 +1,5 @@
 module Rolerequest (
+    listRequestable,
     makeRequestable,
     revokeRequestable,
     rolerequest,
@@ -11,6 +12,7 @@ import Calamity qualified as C
 import Calamity.Commands.Context (FullContext)
 import Control.Lens
 import Data.Set qualified as Set
+import Data.Text.Lazy qualified as L
 import DiPolysemy (info, warning)
 import Polysemy (Member, Members, Sem)
 import Polysemy.Fail (Fail)
@@ -64,6 +66,15 @@ revokeRequestable roleName = do
             info @Text $ "Removed `" <> roleName <> "` from requestable roles"
             info @Text $ "Requestable roles are now: " <> show availableAfter
         else warning @Text $ "Tried to revoke already non-requestable role: " <> roleName
+
+listRequestable :: forall r . (BotC r, Members '[Fail, State Env] r) =>
+    FullContext -> Sem r ()
+listRequestable ctxt = do
+    available <- S.gets (view envRequestableRoles)
+    info @Text $ "Currently requestable roles are: " <> show available
+    void $ C.tell ctxt
+        $ "Currently requestable roles: \n"
+        <> L.intercalate "\n" (toList available)
 
 --
 -- * Helper functions
