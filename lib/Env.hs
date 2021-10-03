@@ -5,6 +5,9 @@ module Env (
     Env (..),
     envAvailRoles,
 
+    Roe (..),
+    roeEnv,
+
     envFromCfg,
     ) where
 
@@ -24,6 +27,12 @@ data Env = Env
     --       as the role ID (:: Snowflake Role).
     } deriving (Show)
 $(makeLenses ''Env)
+
+-- | Read-Only Environment
+data Roe = Roe
+    { _roeEnv :: IORef Env
+    }
+$(makeLenses ''Roe)
 
 envFromCfg :: Cfg -> Env
 envFromCfg cfg = Env

@@ -13,28 +13,30 @@ import DiPolysemy (info, warning)
 import Polysemy (Member, Members)
 import Polysemy qualified as P
 import Polysemy.Fail (Fail)
-import Polysemy.State (State)
-import Polysemy.State qualified as S
+import Polysemy.Reader (Reader)
+import Polysemy.Reader qualified as R
 
-import Env (Env, envAvailRoles)
+import Env (Roe, envAvailRoles, roeEnv)
 
 
 {- | Give the user issuing the bot command the role with the corresponding name.
 The request is only granted if the role is in the explicit list of requestable
 roles.
 -}
-rolerequest :: forall r . (BotC r, Members '[Fail, State Env] r)
+rolerequest :: forall r . (BotC r, Members '[Fail, Reader Roe] r)
     => FullContext -> Text -> P.Sem r ()
 rolerequest ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
     Just role <- lookupRole guild roleName
 
-    available <- S.gets . view $ envAvailRoles
+    -- available <- R.asks . view $ roeEnv
+    envI <- R.asks (view roeEnv)
+    available <- view envAvailRoles <$> liftIO (readIORef envI)
     when (view #name role `elem` available)
         $ void . C.invoke $ C.AddGuildMemberRole guild (ctxt ^. #user) role
 
 -- | Make the given role requestable with 'rolerequest'.
-makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
+makeRequestable :: forall r . (BotC r, Members '[Fail, Reader Roe] r)
     => FullContext -> Text -> P.Sem r ()
 makeRequestable ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
@@ -42,8 +44,10 @@ makeRequestable ctxt roleName = do
         Nothing -> warning @Text $
             "Tried making non-existing role requestable: " <> roleName
         Just _role -> do
-            S.modify' $ over envAvailRoles (toLazy roleName :)
-            available <- S.gets . view $ envAvailRoles
+            envI <- R.asks (view roeEnv)
+            modifyIORef' envI (over envAvailRoles (toLazy roleName :))
+            available <- view envAvailRoles <$> liftIO (readIORef envI)
+
             info @Text $ "Made role `" <> roleName <> "` requestable"
             info @Text $ "Requestable roles are now: " <> show available
 
@@ -55,4 +59,3 @@ lookupRole guild roleName = do
   where
     roleFromName :: Text -> [Role] -> Maybe Role
     roleFromName name = find ((== name) . toStrict . view #name)
-
