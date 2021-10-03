@@ -65,6 +65,7 @@ library
     , parseargs
     , polysemy
     , polysemy-plugin
+    , pretty-simple
     , relude
     , text
   default-language: Haskell2010
@@ -103,6 +104,7 @@ executable shaunwhite-exe
     , parseargs
     , polysemy
     , polysemy-plugin
+    , pretty-simple
     , relude
     , shaunwhite
     , text

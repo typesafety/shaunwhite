@@ -28,6 +28,7 @@ dependencies:
 - parseargs
 - polysemy
 - polysemy-plugin
+- pretty-simple
 - text
 
 executables:

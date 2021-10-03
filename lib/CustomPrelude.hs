@@ -4,6 +4,9 @@
 module CustomPrelude (
     module CustomPrelude,
     module ReludeLess,
+
+    -- Prettyprinter for debugging
+    module Debug.Pretty.Simple
     ) where
 
 import Relude as ReludeLess hiding (
@@ -11,6 +14,8 @@ import Relude as ReludeLess hiding (
     State, runState, evalState, execState, get, put, state,
     Reader, runReader, ask, asks, local, reader, withReader,
     )
+
+import Debug.Pretty.Simple
 
 
 {-# WARNING todo "Unhandled TODO placeholder expression." #-}
