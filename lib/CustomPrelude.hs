@@ -1,6 +1,10 @@
 -- | Provides a custom Prelude for the project. This module allows us to tweak
 -- the contents of Relude by hiding or adding content.
 
+-- TODO: Add commonly used useful stuff:
+--       Polysemy types and effects, common functions from Lens etc.
+-- TODO: Use Lazy text by default (maybe?) for better compatibility with Calamity.
+
 module CustomPrelude (
     module CustomPrelude,
     module ReludeLess,
