@@ -118,11 +118,10 @@ eventHandlers = do
         void $ C.command @'[Text] "rolerequest" rolerequest
 
         -- Make a role requestable. This command requires admin.
-        registerAdminCmd $ hide $ C.command @'[Text] "makeRequestable" makeRequestable
+        registerAdminCmd . hide $ C.command @'[Text] "makeRequestable" makeRequestable
 
         -- Revoke requestable status from a role. This command requires admin.
-        registerAdminCmd . hide . C.command @'[Text] "revokeRequestable"
-            $ \_ roleName ->  revokeRequestable roleName
+        registerAdminCmd . hide $ C.command @'[Text] "revokeRequestable" revokeRequestable
 
         -- List roles that are currently requestable.
         C.command @'[] "listRequestable" listRequestable

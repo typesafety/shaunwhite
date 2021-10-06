@@ -35,10 +35,16 @@ rolerequest :: forall r . (BotC r, Members '[Fail, State Env] r)
 rolerequest ctxt roleName = do
     Just guild <- pure . view #guild $ ctxt
     Just role <- lookupRole guild roleName
-
     available <- S.gets (view envRequestableRoles)
-    when (view #name role `Set.member` available)
-        $ void . C.invoke $ C.AddGuildMemberRole guild (ctxt ^. #user) role
+
+    when (view #name role `Set.member` available) $ do
+        let user = view #user ctxt
+        x <- C.invoke $ C.AddGuildMemberRole guild user role
+        info @Text $ show x
+
+
+        void . C.tell ctxt . L.concat $
+            [ "Assigned role `", toLazy roleName, "` to user ", view #username user ]
 
 -- | Make the given role requestable with 'rolerequest'.
 makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
@@ -51,22 +57,23 @@ makeRequestable ctxt roleName = do
         Just _role -> do
             S.modify' $ over envRequestableRoles (Set.insert $ toLazy roleName)
             available <- S.gets (view envRequestableRoles)
-            info @Text $ "Made role `" <> roleName <> "` requestable"
+            void . C.tell ctxt $ "Made role `" <> roleName <> "` requestable"
             info @Text $ "Requestable roles are now: " <> show available
 
 -- | Revoke requestable status of the given role.
 revokeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
-    => Text -> Sem r ()
-revokeRequestable roleName = do
+    => FullContext -> Text -> Sem r ()
+revokeRequestable ctxt roleName = do
     available <- S.gets (view envRequestableRoles)
     if toLazy roleName `Set.member` available
         then do
             S.modify' $ over envRequestableRoles (Set.delete $ toLazy roleName)
             availableAfter <- S.gets (view envRequestableRoles)
-            info @Text $ "Removed `" <> roleName <> "` from requestable roles"
+            void . C.tell ctxt $ "Removed `" <> roleName <> "` from requestable roles"
             info @Text $ "Requestable roles are now: " <> show availableAfter
-        else warning @Text $ "Tried to revoke already non-requestable role: " <> roleName
+        else info @Text $ "Tried to revoke already non-requestable role: " <> roleName
 
+-- | List all roles that can be requested by users.
 listRequestable :: forall r . (BotC r, Members '[Fail, State Env] r) =>
     FullContext -> Sem r ()
 listRequestable ctxt = do
