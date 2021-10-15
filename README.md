@@ -2,6 +2,12 @@
 
 This bot uses simmsb's [Calamity](https://github.com/simmsb/calamity) library.
 
+## TODO
+
+* Schedule messages to new @reminders role
+* Write tests
+* Hoogle command
+
 ## Custom prelude
 
 The `src/CustomPrelude.hs` module implements the custom prelude used in the
