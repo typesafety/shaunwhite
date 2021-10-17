@@ -35,9 +35,8 @@ Check `package.yaml` for language extensions enabled by default.
 
 ## Structure
 
-The package provides an executable in the `app` directory, and a library in the
-`lib` directory (which holds the entirety of the code). The only purpose of
-this is to make Haddock documentation easier.
+The `src` directory holds the source code, with `Shaunwhite.hs` being the entry
+point to the application.
 
 # Building
 
@@ -47,6 +46,13 @@ Build the bot:
 
 ```sh
 stack build
+```
+
+Build the bot + dependencies and open all documentation in a browser (press `s`
+to search):
+
+```sh
+stack haddock --open
 ```
 
 Run the bot:

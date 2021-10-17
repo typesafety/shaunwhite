@@ -35,7 +35,7 @@ dependencies:
 executables:
   shaunwhite-exe:
     main: Main.hs
-    source-dirs: app
+    source-dirs: src
     dependencies:
     - shaunwhite
     ghc-options:
@@ -55,7 +55,7 @@ executables:
 # The majority of the code resides here, and is only separated from the
 # "executables" to make Haddock generation easier.
 library:
-  source-dirs: lib/
+  source-dirs: src/
   exposed-modules:
     - Args
     - Auth

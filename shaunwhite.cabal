@@ -32,9 +32,10 @@ library
       Rolerequest
       Shaunwhite
   other-modules:
+      Main
       Paths_shaunwhite
   hs-source-dirs:
-      lib/
+      src/
   default-extensions:
       NoImplicitPrelude
       DataKinds
@@ -73,8 +74,16 @@ library
 
 executable shaunwhite-exe
   main-is: Main.hs
+  other-modules:
+      Args
+      Auth
+      Config
+      CustomPrelude
+      Env
+      Rolerequest
+      Shaunwhite
   hs-source-dirs:
-      app
+      src
   default-extensions:
       NoImplicitPrelude
       DataKinds

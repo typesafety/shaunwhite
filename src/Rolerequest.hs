@@ -42,7 +42,7 @@ rolerequest ctxt roleName = do
         x <- C.invoke $ C.AddGuildMemberRole guild user role
         info @Text $ show x
 
-
+        -- TODO: Guard this printout
         void . C.tell ctxt . L.concat $
             [ "Assigned role `", toLazy roleName, "` to user ", view #username user ]
 
