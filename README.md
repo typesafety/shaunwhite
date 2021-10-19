@@ -48,13 +48,6 @@ Build the bot:
 stack build
 ```
 
-Build the bot + dependencies and open all documentation in a browser (press `s`
-to search):
-
-```sh
-stack haddock --open
-```
-
 Run the bot:
 
 ```sh

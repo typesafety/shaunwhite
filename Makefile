@@ -12,16 +12,32 @@ lint:
 
 # Build the project.
 build:
-	stack build -j 0 --test --bench --no-run-tests --no-run-benchmarks
+	stack build --fast --test --bench --no-run-tests --no-run-benchmarks
 
 # Only run type checking (uses a hacky method to accomplish this). Will output
 # a "()" to stdout.
 check:
 	@stack ghci --ghci-options="-e ()"
 
+# Build all documentation.
+haddock-all:
+	stack build --fast --haddock
+
+# Build documentation only for dependencies.
+haddock-deps:
+	stack build --fast --haddock-deps
+
+# Run local hoogle server for searchable documentation.
+hoogle:
+	stack hoogle -- server --local --port=8080
+
+# Generate the Hoogle index.
+hoogle-generate:
+	stack hoogle -- generate --local
+
 # Run the bot locally. Attempts to use a token file "token" in the same
 # directory, and a configuration file from
 # "$XDG_CONFIG_HOME/.config/shaunwhite/config.json".
 run:
-	stack run -- --token ./token
+	stack build --fast && stack run -- --token ./token
 
