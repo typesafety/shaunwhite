@@ -46,7 +46,7 @@ rolerequest ctxt roleName = case view #member ctxt of
         available <- S.gets (view envRequestableRoles)
         let nick = view #username member
 
-        if | isNothing . Vec.find (view #id role ==) . view #roles $ member ->
+        if | isJust . Vec.find (view #id role ==) . view #roles $ member ->
             info @Text [fmt|Member {nick} already has role {roleName}|]
 
            | view #name role `Set.member` available -> do
