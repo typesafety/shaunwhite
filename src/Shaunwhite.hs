@@ -15,6 +15,7 @@ import Calamity.Metrics.Noop (runMetricsNoop)
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
 import Control.Exception (try)
+import Data.Flags ((.+.))
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
@@ -77,11 +78,18 @@ runShaunwhite = do
         . runMetricsNoop
         . useFullContext
         . C.useConstantPrefix ">>="
-        . C.runBotIO tok C.defaultIntents
+        . C.runBotIO tok allIntents
 
         -- Handle additional effects we've added
         . runStateIORef envI
         $ handlers
+      where
+        -- Requires privileged gateway intents to be enabled for the bot,
+        -- see: https://discord.com/developers/docs/topics/gateway#gateway-intents
+        -- Enable at the developer portal page for the bot:
+        -- https://discord.com/developers/applications/[APPLICATION_ID]/bot
+        allIntents :: C.Intents
+        allIntents = C.defaultIntents .+. C.intentGuildMembers .+. C.intentGuildPresences
 
     -- Initialize the starting environment using a config file if successful,
     -- using a default environment otherwise.

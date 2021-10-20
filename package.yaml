@@ -30,7 +30,9 @@ dependencies:
 - polysemy
 - polysemy-plugin
 - pretty-simple
+- PyF
 - text
+- unboxing-vector
 
 executables:
   shaunwhite-exe:
@@ -74,6 +76,7 @@ default-extensions:
 - GADTs
 - ImportQualifiedPost
 - LambdaCase
+- MultiWayIf
 - OverloadedLabels
 - OverloadedStrings
 - PolyKinds

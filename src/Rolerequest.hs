@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Rolerequest (
     listRequestable,
     makeRequestable,
@@ -13,11 +15,13 @@ import Calamity.Commands.Context (FullContext)
 import Control.Lens
 import Data.Set qualified as Set
 import Data.Text.Lazy qualified as L
-import DiPolysemy (info, warning)
+import Data.Vector.Unboxing qualified as Vec
+import DiPolysemy (debug, info, warning)
 import Polysemy (Member, Members, Sem)
 import Polysemy.Fail (Fail)
 import Polysemy.State (State)
 import Polysemy.State qualified as S
+import PyF (fmt)
 
 import Env (Env, envRequestableRoles)
 
@@ -32,19 +36,28 @@ roles.
 -}
 rolerequest :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
-rolerequest ctxt roleName = do
-    Just guild <- pure . view #guild $ ctxt
-    Just role <- lookupRole guild roleName
-    available <- S.gets (view envRequestableRoles)
+rolerequest ctxt roleName = case view #member ctxt of
+    Nothing -> warning @Text
+        $ "Could not find command invoker to be a guild member."
+        <> " Check that the bot has privileged intents enabled."
+    Just member -> do
+        Just guild <- pure . view #guild $ ctxt
+        Just role <- lookupRole guild roleName
+        available <- S.gets (view envRequestableRoles)
+        let nick = view #username member
 
-    when (view #name role `Set.member` available) $ do
-        let user = view #user ctxt
-        x <- C.invoke $ C.AddGuildMemberRole guild user role
-        info @Text $ show x
+        if | isNothing . Vec.find (view #id role ==) . view #roles $ member ->
+            info @Text [fmt|Member {nick} already has role {roleName}|]
 
-        -- TODO: Guard this printout
-        void . C.tell ctxt . L.concat $
-            [ "Assigned role `", toLazy roleName, "` to user ", view #username user ]
+           | view #name role `Set.member` available -> do
+            let user = view #user ctxt
+            res <- C.invoke $ C.AddGuildMemberRole guild user role
+            debug @Text $ show res
+
+            -- TODO: Guard this printout behind success response
+            void . C.tell @Text ctxt $ [fmt|Assign role `{roleName}` to {nick}|]
+
+           | otherwise -> pass
 
 -- | Make the given role requestable with 'rolerequest'.
 makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)

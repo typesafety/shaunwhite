@@ -43,6 +43,7 @@ library
       GADTs
       ImportQualifiedPost
       LambdaCase
+      MultiWayIf
       OverloadedLabels
       OverloadedStrings
       PolyKinds
@@ -53,7 +54,8 @@ library
       TypeOperators
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
   build-depends:
-      aeson
+      PyF
+    , aeson
     , base
     , calamity
     , calamity-commands
@@ -70,6 +72,7 @@ library
     , pretty-simple
     , relude
     , text
+    , unboxing-vector
   default-language: Haskell2010
 
 executable shaunwhite-exe
@@ -91,6 +94,7 @@ executable shaunwhite-exe
       GADTs
       ImportQualifiedPost
       LambdaCase
+      MultiWayIf
       OverloadedLabels
       OverloadedStrings
       PolyKinds
@@ -101,7 +105,8 @@ executable shaunwhite-exe
       TypeOperators
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
   build-depends:
-      aeson
+      PyF
+    , aeson
     , base
     , calamity
     , calamity-commands
@@ -119,4 +124,5 @@ executable shaunwhite-exe
     , relude
     , shaunwhite
     , text
+    , unboxing-vector
   default-language: Haskell2010
