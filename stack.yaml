@@ -3,11 +3,12 @@ resolver:
 
 packages:
 - .
+- calamity-0.1.30.4
 
 extra-deps:
 
 # Calamity dependencies
-- calamity-0.1.30.4@sha256:ff9e8fd8c8fd9c3374720a533a1fb9989cf06dd66f4a695ad83b36df8643d7c2,6838
+# - calamity-0.1.30.4@sha256:ff9e8fd8c8fd9c3374720a533a1fb9989cf06dd66f4a695ad83b36df8643d7c2,6838
 - calamity-commands-0.1.3.0@sha256:88c8b38c8725222d6e24280620228d1a0f7294e68d5f3bd8e449e4025c65d468,3134
 - data-flags-0.0.3.4@sha256:a133f2912e0e22f03419dc89a04b1e117ff6290f1777f5b7f037f683b80ed2cf,1097
 - df1-0.4@sha256:b430ee7e0abda6ce9ef03b9fbe532a7384e6de1b4873357cc116db9f614ce398,1104

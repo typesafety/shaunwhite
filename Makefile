@@ -12,7 +12,10 @@ lint:
 
 # Build the project.
 build:
-	stack build --fast --test --bench --no-run-tests --no-run-benchmarks
+	stack build --test --bench --no-run-tests --no-run-benchmarks
+
+fastbuild:
+	stack build --ghc-options="-O0"
 
 # Only run type checking (uses a hacky method to accomplish this). Will output
 # a "()" to stdout.
@@ -39,5 +42,5 @@ hoogle-generate:
 # directory, and a configuration file from
 # "$XDG_CONFIG_HOME/.config/shaunwhite/config.json".
 run:
-	stack build --fast && stack run -- --token ./token
+	stack run -- --token ./token
 
