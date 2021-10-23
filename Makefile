@@ -42,5 +42,5 @@ hoogle-generate:
 # directory, and a configuration file from
 # "$XDG_CONFIG_HOME/.config/shaunwhite/config.json".
 run:
-	stack run -- --token ./token
+	stack build --ghc-options="-O0" && stack run -- --token ./token
 

@@ -51,7 +51,8 @@ rolerequest ctxt roleName = case view #member ctxt of
 
            | view #name role `Set.member` available -> do
             let user = view #user ctxt
-            res <- C.invoke @() $ C.AddGuildMemberRole guild user role
+            -- res <- C.invoke @(C.GuildRequest ()) $ C.AddGuildMemberRole guild user role
+            res <- C.invoke $ C.TriggerTyping (view #channel ctxt)
             debug @Text $ show res
 
             -- TODO: Guard this printout behind success response

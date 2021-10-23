@@ -1,6 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
--- {-# LANGUAGE UndecidableInstances #-}
-
 -- | Generic Request type
 module Calamity.HTTP.Internal.Request (
   Request (..),
@@ -29,7 +26,8 @@ import Calamity.Types.Token
 import Control.Lens
 import Control.Monad
 
-import Data.Aeson hiding (Options)
+import Data.Aeson (FromJSON, Value, eitherDecode, fromJSON)
+import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TS
@@ -45,36 +43,31 @@ import qualified Polysemy as P
 import qualified Polysemy.Error as P
 import qualified Polysemy.Reader as P
 
-import Debug.Trace
+fromResult :: P.Member (P.Error RestError) r => Aeson.Result a -> Sem r a
+fromResult (Aeson.Success a) = pure a
+fromResult (Aeson.Error e) = P.throw (InternalClientError . TL.pack $ e)
 
-fromResult :: P.Member (P.Error RestError) r => Data.Aeson.Result a -> Sem r a
-fromResult (Success a) = pure a
-fromResult (Error e) = trace ">>> YOU <<<" $ P.throw (InternalClientError . TL.pack $ e)
-
-fromJSONDecode :: (P.Member (P.Error RestError) r) => Either String a -> Sem r a
+fromJSONDecode :: P.Member (P.Error RestError) r => Either String a -> Sem r a
 fromJSONDecode (Right a) = pure a
-fromJSONDecode (Left e) = trace ">>> FUCK <<<" $ P.throw (InternalClientError . TL.pack $ e)
+fromJSONDecode (Left e) = P.throw (InternalClientError . TL.pack $ e)
 
 extractRight :: P.Member (P.Error e) r => Either e a -> Sem r a
 extractRight (Left e) = P.throw e
 extractRight (Right a) = pure a
 
-
-type CResult a = Calamity.HTTP.Internal.Request.Result a
-
 class ReadResponse a where
-  readResp :: LB.ByteString -> Either String a
-
--- instance (CResult a ~ ()) =>
---     ReadResponse a where
---   readResp = const (Right ())
+  readResp :: (Request req, Result req ~ a) =>
+    req ->
+    LB.ByteString ->
+    Sem (P.Error RestError ': r) (Result req)
 
 instance ReadResponse () where
-    readResp = const $ Right Nothing
+  readResp _ _ = pure ()
 
-instance (FromJSON a) => ReadResponse a where
-  readResp = fmap Just . eitherDecode
-
+instance {-# INCOHERENT #-} FromJSON a => ReadResponse a where
+  readResp req bs =
+    fromResult . fromJSON . modifyResponse req
+    =<< (fromJSONDecode . eitherDecode) bs
 
 class Request a where
   type Result a
@@ -86,16 +79,11 @@ class Request a where
   modifyResponse :: a -> Value -> Value
   modifyResponse _ = id
 
-invoke :: forall b r a .
-    ( BotC r
-    , Request a
-    , FromJSON (Calamity.HTTP.Internal.Request.Result a)
-    , (Calamity.HTTP.Internal.Request.Result a) ~ b
-    , ReadResponse b
-    )
-    => a -> Sem r (Either RestError b)
--- a ~ GuildRequest ()
--- Result a ~ Result (GuildRequest ()) ~ ()
+invoke :: forall a r .
+  ( BotC r
+  , Request a
+  , FromJSON (Result a)
+  ) => a -> Sem r (Either RestError (Result a))
 invoke a = do
   rlState' <- P.asks (^. #rlState)
   token' <- P.asks (^. #token)
@@ -110,23 +98,11 @@ invoke a = do
   let r = action a (route' ^. #path) (requestOptions token')
       act = runReq reqConfig r
 
---   resp <- doRequest rlState' route' act
   resp <- push "calamity" . attr "route" (renderUrl $ route' ^. #path) $ doRequest rlState' route' act
-
-  traceM $ "resp: " <> show resp
 
   void $ modifyGauge (subtract 1) inFlightRequests
 
--- fromResult :: P.Member (P.Error RestError) r => Data.Aeson.Result a -> Sem r a
-  -- runError :: Sem (Error RestError ': r) a -> Sem r (Either RestError a)
---   (P.runError :: Sem (P.Error RestError ': r) (Calamity.HTTP.Internal.Request.Result a)
---              -> Sem r (Either RestError (Calamity.HTTP.Internal.Request.Result a)))
-  P.runError
-    $ fmap (fromResult . fromJSON . modifyResponse a)
-        -- =<< fromJSONDecode . (readResp @(Calamity.HTTP.Internal.Request.Result a))
-        =<< fromJSONDecode . (readResp @b)
-        =<< extractRight resp
---   P.runError $ fromJSONDecode . readResp =<< extractRight resp
+  P.runError $ readResp @(Result a) a =<< extractRight resp
 
 reqConfig :: HttpConfig
 reqConfig =
@@ -178,3 +154,4 @@ deleteWith u = req DELETE u NoReqBody lbsResponse
 (=:?) :: ToHttpApiData a => T.Text -> Maybe a -> Option 'Https
 n =:? (Just x) = n =: x
 n =:? Nothing = mempty
+
