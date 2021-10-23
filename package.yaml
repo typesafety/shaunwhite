@@ -37,7 +37,8 @@ dependencies:
 executables:
   shaunwhite-exe:
     main: Main.hs
-    source-dirs: src
+    source-dirs: main/
+    other-modules: []
     dependencies:
     - shaunwhite
     ghc-options:
