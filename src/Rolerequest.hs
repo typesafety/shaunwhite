@@ -1,9 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Rolerequest (
-    listRequestable,
-    makeRequestable,
-    revokeRequestable,
+    registerRolesCommands,
     rolerequest,
     ) where
 
@@ -11,6 +9,7 @@ import CustomPrelude
 
 import Calamity (BotC, Guild, Role)
 import Calamity qualified as C
+import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext)
 import Control.Lens
 import Data.Set qualified as Set
@@ -23,12 +22,33 @@ import Polysemy.State (State)
 import Polysemy.State qualified as S
 import PyF (fmt)
 
+import Auth (registerAdminCmd)
 import Env (Env, envRequestableRoles)
 
 
 --
 -- * Bot commands
 --
+
+{- | Register commands under the group "roles". Registers commands such as
+"roles request" and "roles list".
+-}
+registerRolesCommands :: forall r . (BotC r, Members '[State Env] r)
+    => Sem (C.DSLState FullContext r) ()
+registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
+    -- Request to be assigned a role from the list of requestable roles.
+    void $ C.help (const rolerequestHelp) $ C.command @'[Text] "request" rolerequest
+
+    -- Show the list of requestable roles.
+    void
+        $ C.help (const listRequestableHelp)
+        $ C.command @'[] "list-requestable" listRequestable
+
+    -- ADMIN: Add a role as requestable.
+    registerAdminCmd . C.hide $ C.command @'[Text] "make-requestable" makeRequestable
+
+    -- ADMIN: Revoke a role as requestable.
+    registerAdminCmd . C.hide $ C.command @'[Text] "revoke-requestable" revokeRequestable
 
 {- | Give the user issuing the bot command the role with the corresponding name.
 The request is only granted if the role is in the explicit list of requestable
@@ -55,6 +75,8 @@ rolerequest ctxt roleName = case view #member ctxt of
             debug @Text $ show res
 
             -- TODO: Guard this printout behind success response
+            --       calamity currently has a bug where invocations of requests
+            --       that return () always return Left, even on success.
             void . C.tell @Text ctxt $ [fmt|Assign role `{roleName}` to {nick}|]
 
            | otherwise -> pass
@@ -63,15 +85,19 @@ rolerequest ctxt roleName = case view #member ctxt of
 makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
 makeRequestable ctxt roleName = do
+    available <- S.gets (view envRequestableRoles)
     Just guild <- pure . view #guild $ ctxt
+
     lookupRole guild roleName >>= \case
-        Nothing -> warning @Text $
-            "Tried making non-existing role requestable: " <> roleName
-        Just _role -> do
-            S.modify' $ over envRequestableRoles (Set.insert $ toLazy roleName)
-            available <- S.gets (view envRequestableRoles)
-            void . C.tell ctxt $ "Made role `" <> roleName <> "` requestable"
-            info @Text $ "Requestable roles are now: " <> show available
+        Nothing -> void $ C.tell @Text ctxt [fmt|Role `{roleName}` does not exist|]
+        Just _roles
+            | toLazy roleName `Set.member` available ->
+                void $ C.tell @Text ctxt [fmt|Role `{roleName}` is already requestable|]
+            | otherwise -> do
+                S.modify' $ over envRequestableRoles (Set.insert $ toLazy roleName)
+                newAvailable <- S.gets (view envRequestableRoles)
+                void . C.tell ctxt $ "Made role `" <> roleName <> "` requestable"
+                info @Text $ "Requestable roles are now: " <> show newAvailable
 
 -- | Revoke requestable status of the given role.
 revokeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
@@ -93,8 +119,33 @@ listRequestable ctxt = do
     available <- S.gets (view envRequestableRoles)
     info @Text $ "Currently requestable roles are: " <> show available
     void $ C.tell ctxt
-        $ "Currently requestable roles: \n"
-        <> L.intercalate "\n" (toList available)
+        $ "\nCurrently requestable roles: \n"
+        <> (L.intercalate "\n" . map (flip L.snoc '`' . L.cons '`') . toList) available
+
+--
+-- * Help texts
+--
+
+rolesHelp :: L.Text
+rolesHelp = [fmt|\
+Commands related to requesting and managing roles.
+
+Show help for a child command with `>>=help roles COMMAND`|]
+
+rolerequestHelp :: L.Text
+rolerequestHelp = [fmt|\
+Request to be assigned a role. Show the list of requestable roles with \
+`>>=roles list-requestable`.
+
+Example:
+`>>=roles request DV2021`|]
+
+listRequestableHelp :: L.Text
+listRequestableHelp = [fmt|\
+Show the list of requestable roles.
+
+Example:
+`>>=roles list-requestable`|]
 
 --
 -- * Helper functions

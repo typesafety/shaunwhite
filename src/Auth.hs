@@ -1,5 +1,5 @@
 module Auth (
-    checkIsAdmin,
+    makeAdminCheck,
     registerAdminCmd,
     ) where
 
@@ -26,14 +26,14 @@ registerAdminCmd :: (C.BotC r, FullContext ~ c) =>
     Sem (DSLState c r) (Command c) ->
     Sem (DSLState c r) ()
 registerAdminCmd cmd = do
-    adminCheck <- checkIsAdmin
+    adminCheck <- makeAdminCheck
     void $ requires [adminCheck] cmd
 
 {- | Construct a Check for a command, requiring that the user issuing the
 command is an admin of the server.
 -}
-checkIsAdmin :: forall r . (C.BotC r) => Sem r (Check FullContext)
-checkIsAdmin = buildCheck "Require that user is admin" check
+makeAdminCheck :: forall r . (C.BotC r) => Sem r (Check FullContext)
+makeAdminCheck = buildCheck "Require that user is admin" check
   where
     check :: FullContext -> Sem r (Maybe L.Text)
     check ctxt = runFail (getMember ctxt) >>= \case

@@ -9,7 +9,6 @@ import Calamity.Cache.Eff (CacheEff)
 import Calamity.Cache.InMemory (runCacheInMemory)
 import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext, useFullContext)
-import Calamity.Commands.Dsl (hide)
 import Calamity.Metrics.Eff (MetricEff)
 import Calamity.Metrics.Noop (runMetricsNoop)
 import CalamityCommands.Context (ConstructContext)
@@ -23,15 +22,9 @@ import Polysemy.State (State, runStateIORef)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
-import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
-import Rolerequest
-  ( listRequestable,
-    makeRequestable,
-    revokeRequestable,
-    rolerequest,
-  )
+import Rolerequest (registerRolesCommands, rolerequest)
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:
@@ -114,24 +107,18 @@ eventHandlers = do
     lessen the risk of accidentally allowing anyone to issue admin commands.
     -}
     -- Register bot commands.
-    void $ C.addCommands $ do
+    (_removeHandler, _handler, _) <- C.addCommands $ do
         -- Show help
+        -- TODO: Write better custom help command
         void C.helpCommand
 
         -- Echo back the text following the command name
         void $ C.command @'[Text] "echo" $ \ctxt txt -> do
             void $ C.tell ctxt txt
 
-        -- Give the requested role to the user who issued the command.
-        void $ C.command @'[Text] "rolerequest" rolerequest
-
-        -- Make a role requestable. This command requires admin.
-        registerAdminCmd . hide $ C.command @'[Text] "makeRequestable" makeRequestable
-
-        -- Revoke requestable status from a role. This command requires admin.
-        registerAdminCmd . hide $ C.command @'[Text] "revokeRequestable" revokeRequestable
-
-        -- List roles that are currently requestable.
-        C.command @'[] "listRequestable" listRequestable
+        -- Register commands for adding/removing/requesting roles etc.
+        registerRolesCommands
+        -- Add old command for backwards compatibility
+        void $ C.hide $ C.command @'[Text] "rolerequest" rolerequest
 
     info @Text "Ready!"
