@@ -39,6 +39,8 @@ registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
     -- Request to be assigned a role from the list of requestable roles.
     void $ C.help (const rolerequestHelp) $ C.command @'[Text] "request" rolerequest
 
+    void $ C.help (const leaveRoleHelp) $ C.command @'[Text] "leave" leaveRole
+
     -- Show the list of requestable roles.
     void
         $ C.help (const listRequestableHelp)
@@ -80,6 +82,26 @@ rolerequest ctxt roleName = case view #member ctxt of
             void . C.tell @Text ctxt $ [fmt|Assign role `{roleName}` to {nick}|]
 
            | otherwise -> pass
+
+-- | Removes a (requestable) role from the user.
+leaveRole :: forall r . (BotC r, Members '[Fail, State Env] r)
+    => FullContext -> Text -> Sem r ()
+leaveRole ctxt roleName = case view #member ctxt of
+    Nothing -> warning @Text
+        $ "Could not find command invoker to be a guild member."
+        <> " Check that the bot has privileged intents enabled."
+    Just member -> do
+        Just guild <- pure . view #guild $ ctxt
+        Just role <- lookupRole guild roleName
+        available <- S.gets (view envRequestableRoles)
+        let nick = view #username member
+
+        when (view #name role `Set.member` available) $ do
+            let user = view #user ctxt
+            _res <- C.invoke $ C.RemoveGuildMemberRole guild user role
+
+            -- TODO: Guard this printout behind success response, see rolerequest
+            void . C.tell @Text ctxt $ [fmt|Remove role `{roleName}` from {nick}|]
 
 -- | Make the given role requestable with 'rolerequest'.
 makeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
@@ -139,6 +161,14 @@ Request to be assigned a role. Show the list of requestable roles with \
 
 Example:
 `>>=roles request DV2021`|]
+
+leaveRoleHelp :: L.Text
+leaveRoleHelp = [fmt|\
+Remove a (requestable) role from yourself. Show the list of requestable roles \
+with `>>=roles list-requestable`.
+
+Example:
+`>>=roles leave DV2019`|]
 
 listRequestableHelp :: L.Text
 listRequestableHelp = [fmt|\

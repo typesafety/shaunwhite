@@ -5,7 +5,6 @@ This bot uses simmsb's [Calamity](https://github.com/simmsb/calamity) library.
 ## TODO
 
 * Write a custom (more verbose) `help` command
-* Let users remove roles assigned to them
 * Schedule messages to new @reminders role
 * Hoogle command
 * File structure at some point
