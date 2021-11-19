@@ -52,6 +52,24 @@ registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
     -- ADMIN: Revoke a role as requestable.
     registerAdminCmd . C.hide $ C.command @'[Text] "revoke-requestable" revokeRequestable
 
+    -- ADMIN: Give a role to everyone.
+    registerAdminCmd . C.hide $ C.command @'[Text] "give-all" roleToAll
+
+
+roleToAll :: forall r . (BotC r, Members '[Fail, State Env] r)
+    => FullContext -> Text -> Sem r ()
+roleToAll ctxt roleName = case view #guild ctxt of
+    Nothing -> warning @Text $ "Command must be run in a guild."
+    Just g -> do
+        Just role <- lookupRole g roleName
+        Right members <-
+            C.invoke $ C.ListGuildMembers g (C.ListMembersOptions (Just 999) Nothing)
+
+        void . C.tell ctxt $ "Giving EVERYONE role: " <> roleName
+        mapM_ (\m -> C.invoke $ C.AddGuildMemberRole g m role) members
+
+-- TODO: Add command for removing role from everyone
+
 {- | Give the user issuing the bot command the role with the corresponding name.
 The request is only granted if the role is in the explicit list of requestable
 roles.
