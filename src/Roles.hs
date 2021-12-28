@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Rolerequest (
+module Roles (
     registerRolesCommands,
     rolerequest,
     ) where
@@ -52,23 +52,32 @@ registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
     -- ADMIN: Revoke a role as requestable.
     registerAdminCmd . C.hide $ C.command @'[Text] "revoke-requestable" revokeRequestable
 
-    -- ADMIN: Give a role to everyone.
+    -- ADMIN: Give a (requestable) role to everyone.
     registerAdminCmd . C.hide $ C.command @'[Text] "give-all" roleToAll
 
+    -- ADMIN: Remove a role from everyone.
+    registerAdminCmd . C.hide $ C.command @'[Text] "remove-all" roleRemoveFromAll
 
+
+-- | Give a (requestable) role to everyone on the server.
 roleToAll :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
-roleToAll ctxt roleName = case view #guild ctxt of
-    Nothing -> warning @Text $ "Command must be run in a guild."
-    Just g -> do
-        Just role <- lookupRole g roleName
-        Right members <-
-            C.invoke $ C.ListGuildMembers g (C.ListMembersOptions (Just 999) Nothing)
+roleToAll ctxt roleName = do
+    requestables <- S.gets (view envRequestableRoles)
+    when (toLazy roleName `Set.member` requestables) $ do
+        Just guild <- pure . view #guild $ ctxt
+        Just role <- lookupRole guild roleName
+        void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`"
+        onAllMembers ctxt (\g m -> C.invoke $ C.AddGuildMemberRole g m role)
 
-        void . C.tell ctxt $ "Giving EVERYONE role: " <> roleName
-        mapM_ (\m -> C.invoke $ C.AddGuildMemberRole g m role) members
-
--- TODO: Add command for removing role from everyone
+-- | Remove a role from everyone on the server.
+roleRemoveFromAll :: forall r . (BotC r, Members '[Fail, State Env] r)
+    => FullContext -> Text -> Sem r ()
+roleRemoveFromAll ctxt roleName = do
+    Just guild <- pure . view #guild $ ctxt
+    Just role <- lookupRole guild roleName
+    void . C.tell ctxt $ "Removing the following role from EVERYONE: `" <> roleName <> "`"
+    onAllMembers ctxt (\g m -> C.invoke $ C.RemoveGuildMemberRole g m role)
 
 {- | Give the user issuing the bot command the role with the corresponding name.
 The request is only granted if the role is in the explicit list of requestable
@@ -198,6 +207,16 @@ Example:
 --
 -- * Helper functions
 --
+
+-- | Perform an action on all members of a guild, such as adding/removing a role.
+onAllMembers :: forall r a . (BotC r, Member Fail r)
+    => FullContext -> (Guild -> C.Member -> Sem r a) -> Sem r ()
+onAllMembers ctxt f = do
+    Just g <- pure $ view #guild ctxt
+    Right members <- C.invoke
+        $ C.ListGuildMembers g (C.ListMembersOptions (Just 999) Nothing)
+    mapM_ (f g) members
+
 
 -- | Return the role of the given name if it exists in the guild, or Nothing otherwise.
 lookupRole :: (BotC r, Member Fail r) => Guild -> Text -> Sem r (Maybe Role)

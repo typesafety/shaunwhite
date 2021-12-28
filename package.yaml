@@ -65,7 +65,7 @@ library:
     - Config
     - CustomPrelude
     - Env
-    - Rolerequest
+    - Roles
     - Shaunwhite
 
 default-extensions:

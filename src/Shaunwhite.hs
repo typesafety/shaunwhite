@@ -24,7 +24,7 @@ import System.Console.ParseArgs (getArg)
 import Args (readArgsIO)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
-import Rolerequest (registerRolesCommands, rolerequest)
+import Roles (registerRolesCommands, rolerequest)
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:

@@ -29,7 +29,7 @@ library
       Config
       CustomPrelude
       Env
-      Rolerequest
+      Roles
       Shaunwhite
   other-modules:
       Paths_shaunwhite
