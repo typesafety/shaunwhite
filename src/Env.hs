@@ -11,14 +11,13 @@ module Env (
 import CustomPrelude
 
 import Control.Lens
-import Data.Text.Lazy qualified as L
 
 import Config (Cfg, cfgAvailRoles)
 
 
 -- | Contains necessary state for the program while running.
 data Env = Env
-    { _envRequestableRoles :: Set L.Text
+    { _envRequestableRoles :: Set Text
     -- ^ Names of roles that can be requested.
     -- TODO: possibly use some other means of identification of roles, such
     --       as the role ID (:: Snowflake Role).

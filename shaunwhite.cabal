@@ -1,8 +1,4 @@
-cabal-version: 1.12
-
--- This file has been generated from package.yaml by hpack version 0.34.4.
---
--- see: https://github.com/sol/hpack
+cabal-version: 3.0
 
 name:           shaunwhite
 version:        0.1.0.0
@@ -10,110 +6,119 @@ homepage:       https://github.com/typesafety/shaunwhite#readme
 bug-reports:    https://github.com/typesafety/shaunwhite/issues
 author:         Thomas Li
 maintainer:     guslithd@student.gu.se
-copyright:      2021 Thomas Li
+copyright:      2022 Thomas Li
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
-    CHANGELOG.md
+  README.md
+  CHANGELOG.md
 
 source-repository head
   type: git
   location: https://github.com/typesafety/shaunwhite
 
-library
-  exposed-modules:
-      Args
-      Auth
-      Config
-      CustomPrelude
-      Env
-      Roles
-      Shaunwhite
-  other-modules:
-      Paths_shaunwhite
-  hs-source-dirs:
-      src/
+--
+-- Common stanzas
+--
+
+common common-extensions
   default-extensions:
-      NoImplicitPrelude
-      DataKinds
-      FlexibleContexts
-      GADTs
-      ImportQualifiedPost
-      LambdaCase
-      MultiWayIf
-      OverloadedLabels
-      OverloadedStrings
-      PolyKinds
-      RankNTypes
-      ScopedTypeVariables
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin
+    -- Use a custom prelude instead
+    NoImplicitPrelude
+
+    DataKinds
+    FlexibleContexts
+    GADTs
+    ImportQualifiedPost
+    LambdaCase
+    MultiWayIf
+    OverloadedLabels
+    OverloadedStrings
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+common common-warnings
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wmissing-export-lists
+    -Wpartial-fields
+    -Wredundant-constraints
+
+common common-dependencies
   build-depends:
-      PyF
-    , aeson
-    , base
-    , calamity
-    , calamity-commands
-    , containers
-    , data-flags
-    , di
-    , di-polysemy
-    , directory
-    , filepath
-    , lens
-    , parseargs
-    , polysemy
-    , polysemy-plugin
-    , pretty-simple
-    , relude
-    , text
-    , unboxing-vector
+    -- ghc 8.10.4
+    base ^>= 4.14,
+
+    -- Base for the custom prelude
+    relude ^>= 1.0,
+
+    PyF,
+    aeson,
+    base,
+    calamity,
+    calamity-commands,
+    containers,
+    data-flags,
+    di,
+    di-polysemy,
+    directory,
+    filepath,
+    lens,
+    parseargs,
+    polysemy,
+    polysemy-plugin,
+    pretty-simple,
+    text,
+    unboxing-vector
+
+--
+-- Targets
+--
+
+library shaunwhite-lib
+  import:
+    common-dependencies,
+    common-extensions,
+    common-warnings
+  exposed-modules:
+    Args
+    Auth
+    Config
+    CustomPrelude
+    Env
+    Roles
+    Shaunwhite
+  ghc-options:
+    -fplugin=Polysemy.Plugin
+  hs-source-dirs:
+    src/
   default-language: Haskell2010
 
-executable shaunwhite-exe
+executable shaunwhite
+  import:
+    common-dependencies,
+    common-extensions,
+    common-warnings
   main-is: Main.hs
   hs-source-dirs:
-      main/
-  default-extensions:
-      NoImplicitPrelude
-      DataKinds
-      FlexibleContexts
-      GADTs
-      ImportQualifiedPost
-      LambdaCase
-      MultiWayIf
-      OverloadedLabels
-      OverloadedStrings
-      PolyKinds
-      RankNTypes
-      ScopedTypeVariables
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N -O2 -flate-specialise -fspecialise-aggressively
+    main/
   build-depends:
-      PyF
-    , aeson
-    , base
-    , calamity
-    , calamity-commands
-    , containers
-    , data-flags
-    , di
-    , di-polysemy
-    , directory
-    , filepath
-    , lens
-    , parseargs
-    , polysemy
-    , polysemy-plugin
-    , pretty-simple
-    , relude
-    , shaunwhite
-    , text
-    , unboxing-vector
+    shaunwhite-lib
+  ghc-options:
+    -O1
+    -flate-specialise
+    -fplugin=Polysemy.Plugin
+    -fspecialise-aggressively
+    -rtsopts
+    -threaded
+    -with-rtsopts=-N
   default-language: Haskell2010

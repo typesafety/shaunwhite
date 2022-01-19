@@ -13,7 +13,7 @@ import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext)
 import Control.Lens
 import Data.Set qualified as Set
-import Data.Text.Lazy qualified as L
+import Data.Text qualified as T
 import Data.Vector.Unboxing qualified as Vec
 import DiPolysemy (debug, info, warning)
 import Polysemy (Member, Members, Sem)
@@ -64,7 +64,7 @@ roleToAll :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
 roleToAll ctxt roleName = do
     requestables <- S.gets (view envRequestableRoles)
-    when (toLazy roleName `Set.member` requestables) $ do
+    when (roleName `Set.member` requestables) $ do
         Just guild <- pure . view #guild $ ctxt
         Just role <- lookupRole guild roleName
         void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`"
@@ -101,11 +101,9 @@ rolerequest ctxt roleName = case view #member ctxt of
            | view #name role `Set.member` available -> do
             let user = view #user ctxt
             res <- C.invoke $ C.AddGuildMemberRole guild user role
-            debug @Text $ show res
 
             -- TODO: Guard this printout behind success response
-            --       calamity currently has a bug where invocations of requests
-            --       that return () always return Left, even on success.
+            debug @Text $ "<<<RESULT>>> " <> show res
             void . C.tell @Text ctxt $ [fmt|Assign role `{roleName}` to {nick}|]
 
            | otherwise -> pass
@@ -140,10 +138,10 @@ makeRequestable ctxt roleName = do
     lookupRole guild roleName >>= \case
         Nothing -> void $ C.tell @Text ctxt [fmt|Role `{roleName}` does not exist|]
         Just _roles
-            | toLazy roleName `Set.member` available ->
+            | roleName `Set.member` available ->
                 void $ C.tell @Text ctxt [fmt|Role `{roleName}` is already requestable|]
             | otherwise -> do
-                S.modify' $ over envRequestableRoles (Set.insert $ toLazy roleName)
+                S.modify' $ over envRequestableRoles (Set.insert roleName)
                 newAvailable <- S.gets (view envRequestableRoles)
                 void . C.tell ctxt $ "Made role `" <> roleName <> "` requestable"
                 info @Text $ "Requestable roles are now: " <> show newAvailable
@@ -153,9 +151,9 @@ revokeRequestable :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
 revokeRequestable ctxt roleName = do
     available <- S.gets (view envRequestableRoles)
-    if toLazy roleName `Set.member` available
+    if roleName `Set.member` available
         then do
-            S.modify' $ over envRequestableRoles (Set.delete $ toLazy roleName)
+            S.modify' $ over envRequestableRoles (Set.delete roleName)
             availableAfter <- S.gets (view envRequestableRoles)
             void . C.tell ctxt $ "Removed `" <> roleName <> "` from requestable roles"
             info @Text $ "Requestable roles are now: " <> show availableAfter
@@ -169,40 +167,7 @@ listRequestable ctxt = do
     info @Text $ "Currently requestable roles are: " <> show available
     void $ C.tell ctxt
         $ "\nCurrently requestable roles: \n"
-        <> (L.intercalate "\n" . map (flip L.snoc '`' . L.cons '`') . toList) available
-
---
--- * Help texts
---
-
-rolesHelp :: L.Text
-rolesHelp = [fmt|\
-Commands related to requesting and managing roles.
-
-Show help for a child command with `>>=help roles COMMAND`|]
-
-rolerequestHelp :: L.Text
-rolerequestHelp = [fmt|\
-Request to be assigned a role. Show the list of requestable roles with \
-`>>=roles list-requestable`.
-
-Example:
-`>>=roles request DV2021`|]
-
-leaveRoleHelp :: L.Text
-leaveRoleHelp = [fmt|\
-Remove a (requestable) role from yourself. Show the list of requestable roles \
-with `>>=roles list-requestable`.
-
-Example:
-`>>=roles leave DV2019`|]
-
-listRequestableHelp :: L.Text
-listRequestableHelp = [fmt|\
-Show the list of requestable roles.
-
-Example:
-`>>=roles list-requestable`|]
+        <> (T.intercalate "\n" . map (flip T.snoc '`' . T.cons '`') . toList) available
 
 --
 -- * Helper functions
@@ -225,4 +190,37 @@ lookupRole guild roleName = do
     pure $ roleFromName roleName roles
   where
     roleFromName :: Text -> [Role] -> Maybe Role
-    roleFromName name = find ((== name) . toStrict . view #name)
+    roleFromName name = find ((== name) . view #name)
+
+--
+-- * Help texts
+--
+
+rolesHelp :: Text
+rolesHelp = [fmt|\
+Commands related to requesting and managing roles.
+
+Show help for a child command with `>>=help roles COMMAND`|]
+
+rolerequestHelp :: Text
+rolerequestHelp = [fmt|\
+Request to be assigned a role. Show the list of requestable roles with \
+`>>=roles list-requestable`.
+
+Example:
+`>>=roles request DV2021`|]
+
+leaveRoleHelp :: Text
+leaveRoleHelp = [fmt|\
+Remove a (requestable) role from yourself. Show the list of requestable roles \
+with `>>=roles list-requestable`.
+
+Example:
+`>>=roles leave DV2019`|]
+
+listRequestableHelp :: Text
+listRequestableHelp = [fmt|\
+Show the list of requestable roles.
+
+Example:
+`>>=roles list-requestable`|]

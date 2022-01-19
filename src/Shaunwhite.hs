@@ -33,7 +33,7 @@ http://www.morrowm.com/posts/2021-04-29-calamity.html
 type SetupEffects =
     C.SetupEff
         '[ParsePrefix C.Message
-        , ConstructContext C.Message FullContext IO ()
+        , ConstructContext (C.Message, C.User, Maybe C.Member) FullContext IO ()
         , MetricEff
         , CacheEff
         , Di Di.Level Di.Path Di.Message
@@ -54,8 +54,8 @@ runShaunwhite = do
     args <- readArgsIO
     shauntoken <- readTokenFile $ getArg args "tokenFp"
     envI <- initEnv
-    env <- readIORef envI
 
+    env <- readIORef envI
     putTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
 
     interpret shauntoken envI eventHandlers

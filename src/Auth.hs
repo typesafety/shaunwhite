@@ -16,7 +16,6 @@ import Calamity.Commands.Types
 import CalamityCommands.Check (buildCheck)
 import Control.Lens
 import Data.Flags (containsAll)
-import Data.Text.Lazy qualified as L
 import Polysemy (Member, Sem)
 import Polysemy.Fail (Fail, runFail)
 
@@ -35,7 +34,7 @@ command is an admin of the server.
 makeAdminCheck :: forall r . (C.BotC r) => Sem r (Check FullContext)
 makeAdminCheck = buildCheck "Require that user is admin" check
   where
-    check :: FullContext -> Sem r (Maybe L.Text)
+    check :: FullContext -> Sem r (Maybe Text)
     check ctxt = runFail (getMember ctxt) >>= \case
         Left failMsg -> pure $ Just (fromString failMsg)
         Right member -> do

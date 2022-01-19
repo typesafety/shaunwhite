@@ -29,7 +29,6 @@ import Data.Aeson
     (.=),
   )
 import Data.Text qualified as T
-import Data.Text.Lazy qualified as L
 import System.Directory
   ( XdgDirectory (XdgConfig),
     doesFileExist,
@@ -41,7 +40,7 @@ import System.IO.Error (ioError, userError)
 
 -- | Persistent data to be read into the runtime environment at bot startup.
 data Cfg = Cfg
-    { _cfgAvailRoles :: Set L.Text
+    { _cfgAvailRoles :: Set Text
     } deriving (Show)
 $(makeLenses ''Cfg)
 
@@ -92,7 +91,7 @@ readTokenFile = \case
         pure . makeBotToken . fromString $ token
   where
     makeBotToken :: Text -> Token
-    makeBotToken = BotToken . toLazy . T.strip
+    makeBotToken = BotToken . T.strip
 
 getCfgDir :: IO FilePath
 getCfgDir = getXdgDirectory XdgConfig configSubdir
