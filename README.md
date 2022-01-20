@@ -33,7 +33,7 @@ can be imported in addition to `CustomPrelude`, if so desired.
 
 ## Language extensions
 
-Check `package.yaml` for language extensions enabled by default.
+Check `shaunwhite.cabal` for language extensions enabled by default.
 
 ## Structure
 
@@ -42,16 +42,16 @@ point to the application.
 
 # Building
 
-`shaunwhite` is built with [Stack](https://www.haskellstack.org).
+`shaunwhite` is built with `cabal-install` >= 3.0.
 
 Build the bot:
 
 ```sh
-stack build
+cabal build
 ```
 
 Run the bot:
 
 ```sh
-stack run -- --token path/to/bot/token
+cabal run -- --token path/to/bot/token
 ```
