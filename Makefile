@@ -1,4 +1,5 @@
 .PHONY: help lint run
+export DOCKER_BUILDKIT = 1
 
 help:
 	@echo TODO: Implement help target
@@ -15,3 +16,9 @@ lint:
 # "$XDG_CONFIG_HOME/.config/shaunwhite/config.json".
 run:
 	cabal run shaunwhite -- --token ./token
+
+docker-run:
+	docker run --name shaunwhite-exe -p 3000:3000 shaunwhite
+
+docker-build:
+	docker build -t shaunwhite .
