@@ -24,7 +24,6 @@ COPY LICENSE \
 
 # Build application
 RUN cabal install --installdir=.
-RUN ls -Ahl
 
 #
 # Copy to smaller image

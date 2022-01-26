@@ -17,8 +17,10 @@ lint:
 run:
 	cabal run shaunwhite -- --token ./token
 
+# Not very useful, mostly here for reference
 docker-run:
-	docker run --name shaunwhite-exe -p 3000:3000 shaunwhite
+	docker run -it --rm --name shaunwhite-container shaunwhite-release
 
-docker-build:
-	docker build -t shaunwhite .
+# Build an image that can run the bot anywhere
+docker-build-image:
+	docker build -t shaunwhite-release .
