@@ -18,15 +18,20 @@ import Control.Lens
 import Data.Flags (containsAll)
 import Polysemy (Member, Sem)
 import Polysemy.Fail (Fail, runFail)
+import Polysemy.State (State, modify')
 
 
 -- | Register a command that requires an admin to issue it.
-registerAdminCmd :: (C.BotC r, FullContext ~ c) =>
+registerAdminCmd :: (C.BotC r, FullContext ~ c, Member (State [Command c]) r) =>
     Sem (DSLState c r) (Command c) ->
     Sem (DSLState c r) ()
 registerAdminCmd cmd = do
+    -- Add admin check
     adminCheck <- makeAdminCheck
     void $ requires [adminCheck] cmd
+
+    -- Add to list of admin commands
+    modify' . (:) =<< cmd
 
 {- | Construct a Check for a command, requiring that the user issuing the
 command is an admin of the server.

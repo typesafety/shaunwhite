@@ -11,17 +11,20 @@ import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext, useFullContext)
 import Calamity.Metrics.Eff (MetricEff)
 import Calamity.Metrics.Noop (runMetricsNoop)
+import CalamityCommands.Command qualified as CCC (Command(..))
 import CalamityCommands.Context (ConstructContext)
 import CalamityCommands.ParsePrefix (ParsePrefix)
 import Control.Exception (try)
 import Data.Flags ((.+.))
+import Data.Text qualified as T
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
-import Polysemy.State (State, runStateIORef)
+import Polysemy.State (State, runStateIORef, runState, get)
 import System.Console.ParseArgs (getArg)
 
 import Args (readArgsIO)
+import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
 import Roles (registerRolesCommands, rolerequest)
@@ -42,7 +45,14 @@ type SetupEffects =
         ]
 
 -- | Effects for additional stuff we want.
-type ShaunwhiteEffects = '[State Env]
+type ShaunwhiteEffects =
+    -- Application state
+    '[State Env
+
+    -- For collecting admin commands during initialization to show help texts
+    -- separately
+    , State [C.Command FullContext]
+    ]
 
 -- | Main entry point.
 runShaunwhite :: IO ()
@@ -73,7 +83,8 @@ runShaunwhite = do
         . C.useConstantPrefix ">>="
         . C.runBotIO tok allIntents
 
-        -- Handle additional effects we've added
+        -- Handle additional effects we've added, see `ShaunwhiteEffects`.
+        . runState []
         . runStateIORef envI
         $ handlers
       where
@@ -98,7 +109,6 @@ runShaunwhite = do
             { _envRequestableRoles = mempty
             }
 
-
 eventHandlers :: P.Sem (ShaunwhiteEffects ++ SetupEffects) ()
 eventHandlers = do
     info @Text "Setting up event handlers..."
@@ -121,4 +131,27 @@ eventHandlers = do
         -- Add old command for backwards compatibility
         void $ C.hide $ C.command @'[Text] "rolerequest" rolerequest
 
+        -- Show a quick summary of admin commands
+        registerAdminCmd $ C.help (const "List admin commands.") adminHelp
+
     info @Text "Ready!"
+  where
+    -- Print names and help texts for all registered admin commands.
+    adminHelp :: forall r .
+        ( C.BotC r
+        , P.Member (State [C.Command FullContext]) r
+        )
+        => P.Sem (C.DSLState FullContext r) (C.Command FullContext)
+    adminHelp = C.command @'[] "admin-commands" $ \ctxt -> do
+        -- TODO: use more stuff from Command (like `params`) to show prettier
+        -- help texts.
+        --
+        -- At some point, expand into dedicated help message module and
+        -- apply to all commands.
+        let formatNames = T.intercalate ", " . toList . fmap (\txt -> "`" <> txt <> "`")
+        let formatHelp = ($ ctxt)
+        let combine = \(names, help) -> "- " <> names <> ": " <> help
+        let fmtCmd = combine . (formatNames . CCC.names &&& formatHelp . CCC.help)
+
+        helpText <- T.intercalate "\n" . map fmtCmd <$> get @[C.Command FullContext]
+        void $ C.tell ctxt $ "\n\n**Admin commands:**\n" <> helpText

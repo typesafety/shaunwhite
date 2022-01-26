@@ -33,12 +33,20 @@ import Env (Env, envRequestableRoles)
 {- | Register commands under the group "roles". Registers commands such as
 "roles request" and "roles list".
 -}
-registerRolesCommands :: forall r . (BotC r, Members '[State Env] r)
+registerRolesCommands :: forall r .
+    ( BotC r
+    , Members '[State Env, State [C.Command FullContext]] r
+    )
     => Sem (C.DSLState FullContext r) ()
 registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
+    --
+    -- Normal user commands
+    --
+
     -- Request to be assigned a role from the list of requestable roles.
     void $ C.help (const rolerequestHelp) $ C.command @'[Text] "request" rolerequest
 
+    -- Remove an assigned (requestable) role from yourself.
     void $ C.help (const leaveRoleHelp) $ C.command @'[Text] "leave" leaveRole
 
     -- Show the list of requestable roles.
@@ -46,17 +54,29 @@ registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
         $ C.help (const listRequestableHelp)
         $ C.command @'[] "list-requestable" listRequestable
 
-    -- ADMIN: Add a role as requestable.
-    registerAdminCmd . C.hide $ C.command @'[Text] "make-requestable" makeRequestable
+    --
+    -- Admin commands (only register with `registerAdminCmd`)
+    --
 
-    -- ADMIN: Revoke a role as requestable.
-    registerAdminCmd . C.hide $ C.command @'[Text] "revoke-requestable" revokeRequestable
+    -- Add a role as requestable.
+    registerAdminCmd . C.hide
+        $ C.help (const "Make a command requestable")
+        $ C.command @'[Text] "make-requestable" makeRequestable
 
-    -- ADMIN: Give a (requestable) role to everyone.
-    registerAdminCmd . C.hide $ C.command @'[Text] "give-all" roleToAll
+    -- Revoke a role as requestable.
+    registerAdminCmd . C.hide
+        $ C.help (const "Make a command non-requestable")
+        $ C.command @'[Text] "revoke-requestable" revokeRequestable
 
-    -- ADMIN: Remove a role from everyone.
-    registerAdminCmd . C.hide $ C.command @'[Text] "remove-all" roleRemoveFromAll
+    -- Give a (requestable) role to everyone.
+    registerAdminCmd . C.hide
+        $ C.help (const "Give a role to everyone in the server")
+        $ C.command @'[Text] "give-all" roleToAll
+
+    -- Remove a role from everyone.
+    registerAdminCmd . C.hide
+        $ C.help (const "Remove a role from everyone in the server")
+        $ C.command @'[Text] "remove-all" roleRemoveFromAll
 
 
 -- | Give a (requestable) role to everyone on the server.
