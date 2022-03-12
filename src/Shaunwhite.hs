@@ -124,7 +124,12 @@ eventHandlers = do
 
         -- Echo back the text following the command name
         void $ C.command @'[Text] "echo" $ \ctxt txt -> do
-            void $ C.tell ctxt txt
+            -- TODO: Make the bot ignore commands if the message sender was themselves.
+            --       (or another bot?)
+            --
+            -- Prefix the entire message with something else for now, so that
+            -- users can't tell it to echo commands and execute them.
+            void $ C.tell ctxt ("**Shaun White says:** " <> txt)
 
         -- Register commands for adding/removing/requesting roles etc.
         registerRolesCommands
