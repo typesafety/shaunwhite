@@ -13,6 +13,7 @@ module CustomPrelude (
     module Debug.Pretty.Simple
     ) where
 
+import Data.Text.IO qualified as T
 import Debug.Pretty.Simple
 import Relude as ReludeLess hiding (
     -- Hide RWS stuff that is replaced by Polysemy equivalents
@@ -32,3 +33,7 @@ type family (as :: [k]) ++ (bs :: [k]) :: [k] where
     '[]       ++ bs = bs
     (a ': as) ++ bs = a ': (as ++ bs)
 infixr 5 ++
+
+-- | Like "putTextLn", but outputs to stderr.
+errTextLn :: MonadIO m => Text -> m ()
+errTextLn = liftIO . T.hPutStrLn stderr

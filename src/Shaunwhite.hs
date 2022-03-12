@@ -66,7 +66,7 @@ runShaunwhite = do
     envI <- initEnv (getArg args "configFp")
 
     env <- readIORef envI
-    putTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
+    errTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
 
     interpret shauntoken envI eventHandlers
   where
