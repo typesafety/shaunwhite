@@ -1,0 +1,10 @@
+services:
+  shaunwhite:
+    image: shaunwhite-release:latest
+    restart: always
+    ports:
+      - "10000:10000"
+    volumes:
+      - ${PWD}/config.json:/opt/shaunwhite/config.json
+      - ${PWD}/token:/opt/shaunwhite/token
+
