@@ -78,17 +78,18 @@ registerRolesCommands = C.help (const rolesHelp) $ C.group' "roles" $ do
         $ C.help (const "Remove a role from everyone in the server")
         $ C.command @'[Text] "remove-all" roleRemoveFromAll
 
-
 -- | Give a (requestable) role to everyone on the server.
 roleToAll :: forall r . (BotC r, Members '[Fail, State Env] r)
     => FullContext -> Text -> Sem r ()
 roleToAll ctxt roleName = do
     requestables <- S.gets (view envRequestableRoles)
-    when (roleName `Set.member` requestables) $ do
-        Just guild <- pure . view #guild $ ctxt
-        Just role <- lookupRole guild roleName
-        void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`"
-        onAllMembers ctxt (\g m -> C.invoke $ C.AddGuildMemberRole g m role)
+    if (roleName `Set.member` requestables)
+        then do
+            Just guild <- pure . view #guild $ ctxt
+            Just role <- lookupRole guild roleName
+            void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`"
+            onAllMembers ctxt (\g m -> C.invoke $ C.AddGuildMemberRole g m role)
+        else void . C.tell @Text ctxt $ [fmt|`{roleName}` is not a requestable role|]
 
 -- | Remove a role from everyone on the server.
 roleRemoveFromAll :: forall r . (BotC r, Members '[Fail, State Env] r)
