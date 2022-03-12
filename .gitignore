@@ -26,4 +26,7 @@ cabal.project.local~
 token
 testtoken
 
+# Shaunwhite config
+config.json
+
 .vscode

@@ -58,14 +58,16 @@ exception if encountering issues, e.g. file not found or in the wrong format.
 The first of the following options will be attempted (failure will not cause
 following options to be attempted):
 
-(TODO: Not implemented yet) 1. @--token@ command line parameter.
+(TODO: Not implemented yet) 1. @--config@ command line parameter.
 2. @XDG_CONFIG_HOME/shaunwhite/config.json@
 -}
-readCfgFile :: IO Cfg
-readCfgFile = do
+readCfgFile :: Maybe FilePath -> IO Cfg
+readCfgFile mbyFp = do
     cfgDir <- getCfgDir
+    let cfgFp = fromMaybe (cfgDir </> "config" <.> "json") mbyFp
+
     -- TODO: more granular exception handling
-    readRes <- try @IOException $ decodeFileStrict' $ cfgDir </> "config" <.> "json"
+    readRes <- try @IOException $ decodeFileStrict' cfgFp
     case readRes of
         Left exc     -> throwIO exc
         Right mbyCfg -> case mbyCfg of

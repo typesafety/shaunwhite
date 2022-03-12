@@ -1,4 +1,6 @@
-.PHONY: help lint run
+# It's just a command runner
+
+.PHONY: help lint run docker-run docker-build-image
 export DOCKER_BUILDKIT = 1
 
 help:

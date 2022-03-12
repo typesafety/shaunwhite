@@ -63,7 +63,7 @@ runShaunwhite = do
     -- TODO: Carry command-line arguments in a RO state.
     args <- readArgsIO
     shauntoken <- readTokenFile $ getArg args "tokenFp"
-    envI <- initEnv
+    envI <- initEnv (getArg args "configFp")
 
     env <- readIORef envI
     putTextLn $ "Starting shaunwhite with the following environment: \n" <> show env
@@ -97,11 +97,11 @@ runShaunwhite = do
 
     -- Initialize the starting environment using a config file if successful,
     -- using a default environment otherwise.
-    initEnv :: IO (IORef Env)
-    initEnv = do
-        env <- try @SomeException readCfgFile <&> \case
+    initEnv :: Maybe FilePath -> IO (IORef Env)
+    initEnv mbyCfg = do   -- TODO: be more flexible than a single Maybe arg
+        env <- try @SomeException (readCfgFile mbyCfg) <&> \case
             Right cfg -> envFromCfg cfg
-            Left _    -> defaultEnv
+            Left _ -> defaultEnv
         newIORef env
       where
         defaultEnv :: Env

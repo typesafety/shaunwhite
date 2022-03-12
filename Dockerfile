@@ -33,4 +33,4 @@ WORKDIR /opt/shaunwhite
 COPY --from=build-env /opt/shaunwhite/shaunwhite ./shaunwhite
 COPY token ./token
 
-CMD ./shaunwhite --token ./token
+CMD ./shaunwhite --token ./token --config ./config.json
