@@ -7,7 +7,7 @@ This bot uses simmsb's [Calamity](https://github.com/simmsb/calamity) library.
 * Write a custom (more verbose) `help` command
 * Schedule messages to new @reminders role
 * Hoogle command
-* File structure at some point
+* Folder structure at some point
 * <sub>Write tests</sub>
 
 ## Custom prelude
@@ -42,7 +42,7 @@ point to the application.
 
 # Building
 
-`shaunwhite` is built with `cabal-install` >= 3.0.
+`shaunwhite` is built with `cabal-install` >= 3.0 and GHC version 8.10.7.
 
 Build the bot:
 
@@ -53,5 +53,5 @@ cabal build
 Run the bot:
 
 ```sh
-cabal run -- --token path/to/bot/token
+cabal run -- --token path/to/bot/token --config path/to/config.json
 ```
