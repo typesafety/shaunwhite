@@ -15,7 +15,6 @@ import Control.Lens
 import Data.Set qualified as Set
 import Data.Text qualified as T
 import Data.Vector.Unboxing qualified as Vec
-import DiPolysemy (debug, info, warning)
 import Polysemy (Member, Members, Sem)
 import Polysemy.Fail (Fail)
 import Polysemy.State (State)
@@ -87,7 +86,7 @@ roleToAll ctxt roleName = do
         then do
             Just guild <- pure . view #guild $ ctxt
             Just role <- lookupRole guild roleName
-            void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`"
+            void . C.tell ctxt $ "Giving EVERYONE role: `" <> roleName <> "`."
             onAllMembers ctxt (\g m -> C.invoke $ C.AddGuildMemberRole g m role)
         else void . C.tell @Text ctxt $ [fmt|`{roleName}` is not a requestable role|]
 

@@ -97,6 +97,7 @@ library shaunwhite-lib
     Env
     Roles
     Shaunwhite
+    Welcome
   ghc-options:
     -fplugin=Polysemy.Plugin
   hs-source-dirs:

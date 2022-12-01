@@ -7,6 +7,8 @@ import CustomPrelude
 import Calamity qualified as C
 import Calamity.Cache.Eff (CacheEff)
 import Calamity.Cache.InMemory (runCacheInMemory)
+import Calamity.Client.Client qualified as Client
+import Calamity.Client.Types qualified as ClientTypes
 import Calamity.Commands qualified as C
 import Calamity.Commands.Context (FullContext, useFullContext)
 import Calamity.Metrics.Eff (MetricEff)
@@ -20,6 +22,7 @@ import Data.Text qualified as T
 import Di qualified
 import DiPolysemy (Di, info, runDiToIO)
 import Polysemy qualified as P
+import Polysemy.Fail qualified as P
 import Polysemy.State (State, runStateIORef, runState, get)
 import System.Console.ParseArgs (getArg)
 
@@ -28,6 +31,7 @@ import Auth (registerAdminCmd)
 import Config (readCfgFile, readTokenFile)
 import Env (Env (..), envFromCfg)
 import Roles (registerRolesCommands, rolerequest)
+import Welcome (handleMemberJoined)
 
 
 {- | A bunch of required effects for boilerplate-y stuff, see:
@@ -84,8 +88,8 @@ runShaunwhite = do
         . C.runBotIO tok allIntents
 
         -- Handle additional effects we've added, see `ShaunwhiteEffects`.
-        . runState []
-        . runStateIORef envI
+        . runState []  -- Collecting registered commands
+        . runStateIORef envI  -- Runtime environment
         $ handlers
       where
         -- Requires privileged gateway intents to be enabled for the bot,
@@ -101,12 +105,14 @@ runShaunwhite = do
     initEnv mbyCfg = do   -- TODO: be more flexible than a single Maybe arg
         env <- try @SomeException (readCfgFile mbyCfg) <&> \case
             Right cfg -> envFromCfg cfg
-            Left _ -> defaultEnv
+            Left errMsg -> defaultEnv
+        when (env == defaultEnv) $ print "Failed to read config file, using default environment."
         newIORef env
       where
         defaultEnv :: Env
         defaultEnv = Env
             { _envRequestableRoles = mempty
+            , _envWelcomeRoles = mempty
             }
 
 eventHandlers :: P.Sem (ShaunwhiteEffects ++ SetupEffects) ()
@@ -117,6 +123,7 @@ eventHandlers = do
     lessen the risk of accidentally allowing anyone to issue admin commands.
     -}
     -- Register bot commands.
+    info @Text "Registering command handlers..."
     (_removeHandler, _handler, _) <- C.addCommands $ do
         -- Show help
         -- TODO: Write better custom help command
@@ -138,6 +145,13 @@ eventHandlers = do
 
         -- Show a quick summary of admin commands
         registerAdminCmd $ C.help (const "List admin commands.") adminHelp
+
+    -- Register event handlers (doing something when someone joins the server,
+    -- when someone reacts to a message etc.).
+    info @Text "Registering event listeners..."
+
+    _ <- Client.react @'ClientTypes.GuildMemberAddEvt $ \member -> do
+        handleMemberJoined member
 
     info @Text "Ready!"
   where

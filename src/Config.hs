@@ -7,6 +7,7 @@ use while running, such as the bot token or configuration settings.
 module Config (
     Cfg (Cfg),
     cfgAvailRoles,
+    cfgWelcomeRoles,
 
     readCfgFile,
     readTokenFile,
@@ -17,6 +18,7 @@ import CustomPrelude
 import Calamity.Types.Token (Token (BotToken))
 import Control.Exception (IOException, throwIO, try)
 import Control.Lens.TH (makeLenses)
+import Control.Lens (view)
 import Data.Aeson
   ( FromJSON,
     ToJSON,
@@ -41,16 +43,25 @@ import System.IO.Error (ioError, userError)
 -- | Persistent data to be read into the runtime environment at bot startup.
 data Cfg = Cfg
     { _cfgAvailRoles :: Set Text
+    , _cfgWelcomeRoles :: Set Text
     } deriving (Show)
 $(makeLenses ''Cfg)
 
 instance FromJSON Cfg where
-    parseJSON = withObject "Cfg" $ \v -> Cfg
-        . fromList <$> v .: "requestable_roles"
+    parseJSON = withObject "Cfg" $ \val -> do
+        availRoles <- fromList <$> val .: "requestable_roles"
+        welcomeRoles <- fromList <$> val .: "welcomeRoles"
+        pure $ Cfg
+            { _cfgAvailRoles = availRoles
+            , _cfgWelcomeRoles = welcomeRoles
+            }
 
 instance ToJSON Cfg where
-    toJSON (Cfg availRoles) =
-        object ["requestable_roles" .= toList availRoles]
+    toJSON (cfg :: Cfg) =
+        object [
+            "requestable_roles" .= toList (view cfgAvailRoles cfg),
+            "welcome_roles" .= toList (view cfgWelcomeRoles cfg)
+        ]
 
 {- | Attempt to read a Cfg from file. Expects a JSON format, and raises an
 exception if encountering issues, e.g. file not found or in the wrong format.

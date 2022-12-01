@@ -10,16 +10,21 @@ module CustomPrelude (
     module ReludeLess,
 
     -- Prettyprinter for debugging
-    module Debug.Pretty.Simple
+    module Debug.Pretty.Simple,
+
+    -- Logging commands
+    module DiPolysemy
     ) where
 
 import Data.Text.IO qualified as T
 import Debug.Pretty.Simple
+import DiPolysemy as DiPolysemy (debug, info, warning)
 import Relude as ReludeLess hiding (
     -- Hide RWS stuff that is replaced by Polysemy equivalents
     State, runState, evalState, execState, get, put, modify, modify', state,
     Reader, runReader, ask, asks, local, reader, withReader,
     )
+
 
 
 {-# WARNING todo "Unhandled TODO placeholder expression." #-}
